@@ -47,6 +47,7 @@ const Navigation = () => {
     <nav
       style={{
         width: 240,
+        height: '100vh',
         minHeight: '100vh',
         background: '#fff',
         borderRight: '1px solid #e5e7eb',
@@ -54,6 +55,10 @@ const Navigation = () => {
         flexDirection: 'column',
         padding: '2rem 1rem 2rem 1rem',
         boxSizing: 'border-box',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        zIndex: 100,
       }}
     >
       {/* Logo at the top of the sidenav */}
@@ -144,7 +149,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <Navigation />
-      <main style={{ flex: 1, padding: '2rem' }}>{children}</main>
+      <main style={{ flex: 1, padding: '2rem', marginLeft: 240 }}>{children}</main>
     </div>
   );
 };

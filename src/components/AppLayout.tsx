@@ -60,7 +60,7 @@ const Navigation = () => {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
         <img
           src={ExpenseSyncLogo}
-          alt="ExpenseSync Logo"
+          alt="ExpenSync Logo"
           style={{ width: '100%', height: 'auto', marginBottom: 8 }}
         />
         

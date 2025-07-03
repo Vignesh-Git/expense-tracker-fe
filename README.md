@@ -1,4 +1,4 @@
-# ExpenseSync Frontend
+# ExpenSync Frontend
 
 A modern expense tracking application built with React, TypeScript, PrimeReact, and RxJS for reactive state management.
 

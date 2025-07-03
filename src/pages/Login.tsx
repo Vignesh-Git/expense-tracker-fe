@@ -68,7 +68,7 @@ const Login: React.FC = () => {
     }}>
       <Card style={{ width: 400, padding: '2.5rem 2rem' }}>
         <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 28, textAlign: 'center' }}>
-          Login to ExpenseSync
+          Login to ExpenSync
         </div>
         
         {error && (

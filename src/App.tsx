@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import UserPage from './pages/User';
 import Expenses from './pages/Expenses';
+import Settings from './pages/Settings';
 
 // Page components
 const Dashboard = () => (
@@ -17,13 +18,7 @@ const Dashboard = () => (
   </Card>
 );
 
-const Settings = () => (
-  <Card title="Settings" className="w-full">
-    <p className="m-0">
-      Configure your account settings and preferences here.
-    </p>
-  </Card>
-);
+
 
 // Main App component with RxJS-based authentication
 const App: React.FC = () => {

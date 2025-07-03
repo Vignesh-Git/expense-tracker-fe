@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
-import { useAuthStore } from '../utils/useAuthStore';
+import { useAuth } from '../utils/useAuth';
+import ExpenseSyncLogo from '../assets/ExpenseSync.logo.png'; // Import logo
 
 // Props interface for the layout component
 interface AppLayoutProps {
@@ -12,7 +13,7 @@ interface AppLayoutProps {
 const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, isLoading } = useAuthStore();
+  const { user, logout, isLoading } = useAuth();
 
   const menuItems = [
     {
@@ -55,39 +56,16 @@ const Navigation = () => {
         boxSizing: 'border-box',
       }}
     >
-      <div style={{ marginBottom: '2rem', fontWeight: 700, fontSize: 22, color: '#222' }}>
-        ExpenseSync
+      {/* Logo at the top of the sidenav */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <img
+          src={ExpenseSyncLogo}
+          alt="ExpenseSync Logo"
+          style={{ width: '100%', height: 'auto', marginBottom: 8 }}
+        />
+        
       </div>
       
-      {/* User Info Section */}
-      {user && (
-        <div style={{ 
-          marginBottom: '2rem', 
-          padding: '1rem', 
-          background: '#f8fafc', 
-          borderRadius: '8px',
-          border: '1px solid #e5e7eb'
-        }}>
-          <div style={{ fontWeight: 600, color: '#374151', marginBottom: '0.5rem' }}>
-            {user.name}
-          </div>
-          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>
-            {user.email}
-          </div>
-          <div style={{ 
-            display: 'inline-block', 
-            padding: '0.25rem 0.5rem', 
-            background: user.role === 'admin' ? '#dc2626' : '#059669', 
-            color: 'white', 
-            borderRadius: '4px', 
-            fontSize: '0.75rem', 
-            fontWeight: 500 
-          }}>
-            {user.role}
-          </div>
-        </div>
-      )}
-
       {/* Navigation Menu */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
         {menuItems.map((item, index) => (
@@ -112,6 +90,37 @@ const Navigation = () => {
           </Link>
         ))}
       </div>
+
+      {/* User Profile Card at the bottom, clickable to /user */}
+      {user && (
+        <div
+          onClick={() => navigate('/user')}
+          style={{
+            marginTop: 16,
+            marginBottom: 8,
+            padding: '1rem',
+            background: '#f8fafc',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            cursor: 'pointer',
+            transition: 'box-shadow 0.2s',
+            boxShadow: location.pathname === '/user' ? '0 0 0 2px #2196f3' : 'none',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{ fontWeight: 600, color: '#374151', marginBottom: '0.5rem' }}>{user.name}</div>
+          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '1rem' }}>{user.email}</div>
+          <div style={{
+            display: 'inline-block',
+            padding: '0.25rem 0.5rem',
+            background: user.role === 'admin' ? '#dc2626' : '#059669',
+            color: 'white',
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            fontWeight: 500
+          }}>{user.role}</div>
+        </div>
+      )}
 
       {/* Logout Button */}
       <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>

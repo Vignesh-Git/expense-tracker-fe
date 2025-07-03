@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { ProgressSpinner } from 'primereact/progressspinner';
-import { useAuthStore } from '../utils/useAuthStore';
+import { useAuth } from '../utils/useAuth';
 
 // Props interface for the guard component
 interface AuthGuardProps {
@@ -16,7 +16,7 @@ interface AuthGuardProps {
  * Optionally checks for admin role
  */
 const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false }) => {
-  const { isAuthenticated, isLoading, isAdmin } = useAuthStore();
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
   const location = useLocation();
 
   // Show loading spinner while checking authentication

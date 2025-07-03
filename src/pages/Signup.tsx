@@ -5,7 +5,7 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Message } from 'primereact/message';
-import { useAuthStore } from '../utils/useAuthStore';
+import { useAuth } from '../utils/useAuth';
 
 /**
  * Signup Page Component
@@ -14,7 +14,7 @@ import { useAuthStore } from '../utils/useAuthStore';
 const Signup: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signup, isLoading, error, clearError } = useAuthStore();
+  const { signup, isLoading, error, clearError } = useAuth();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -91,7 +91,7 @@ const Signup: React.FC = () => {
 
       const from = location.state?.from?.pathname || '/';
       navigate(from, { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Error is already handled by the store
       console.error('Signup error:', err);
     }

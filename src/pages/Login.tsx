@@ -5,12 +5,12 @@ import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Button } from 'primereact/button';
 import { Message } from 'primereact/message';
-import { useAuthStore } from '../utils/useAuthStore';
+import { useAuth } from '../utils/useAuth';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const { login, isLoading, error, clearError } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -40,7 +40,7 @@ const Login: React.FC = () => {
       // Redirect to intended page or dashboard
       const from = location.state?.from?.pathname || '/';
       navigate(from, { replace: true });
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Error is already handled by the store
       console.error('Login error:', err);
     }

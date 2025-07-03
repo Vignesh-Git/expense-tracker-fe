@@ -13,6 +13,7 @@ import { categoryService } from '../utils/categoryService';
 import type { Category } from '../utils/categoryService';
 import { Dropdown } from 'primereact/dropdown';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { useAuth } from '../utils/useAuth';
 
 // Curated list of category icons with plain labels (no emoji)
 const primeIcons = [
@@ -40,6 +41,7 @@ const Settings: React.FC = () => {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState({ name: '', color: '#2196f3', icon: 'pi pi-tag' });
   const [toast, setToast] = useState<Toast | null>(null);
+  const { isAdmin } = useAuth();
 
   // Load categories on mount
   useEffect(() => {
@@ -127,9 +129,7 @@ const Settings: React.FC = () => {
   const actionTemplate = (cat: Category) => (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
       <Button icon="pi pi-pencil" className="p-button-text" onClick={() => openDialog(cat)} tooltip="Edit" />
-      {!cat.isDefault && (
-        <Button icon="pi pi-trash" className="p-button-text p-button-danger" onClick={() => handleDelete(cat)} tooltip="Delete" />
-      )}
+      <Button icon="pi pi-trash" className="p-button-text p-button-danger" onClick={() => handleDelete(cat)} tooltip="Delete" />
     </div>
   );
 
@@ -151,33 +151,33 @@ const Settings: React.FC = () => {
         <TabPanel header="Category">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h3 style={{ margin: 0 }}>Manage Categories</h3>
-            <Button label="Add Category" icon="pi pi-plus" onClick={() => openDialog()} />
+            {isAdmin && (
+              <Button label="Add Category" icon="pi pi-plus" onClick={() => openDialog()} />
+            )}
           </div>
           <DataTable value={categories} loading={loading} responsiveLayout="scroll" paginator rows={8} style={{ minHeight: 300 }}>
             <Column field="name" header="Name" sortable />
             <Column field="color" header="Color" body={colorTemplate} />
             <Column field="icon" header="Icon" body={iconTemplate} />
-            {/* Removed Default column */}
-            <Column header="Actions" body={actionTemplate} style={{ width: 120 }} />
+            <Column header="Actions" body={isAdmin ? actionTemplate : undefined} style={{ width: 120 }} />
           </DataTable>
           <ConfirmDialog />
           <Dialog header={editingCategory ? 'Edit Category' : 'Add Category'} visible={showDialog} style={{ width: 400 }} onHide={() => setShowDialog(false)} modal className="p-fluid" draggable={false} resizable={false}>
             <div className="p-field">
               <label htmlFor="name">Name</label>
-              <InputText id="name" value={formData.name} onChange={e => setFormData(f => ({ ...f, name: e.target.value }))} autoFocus />
+              <InputText id="name" value={formData.name} onChange={e => setFormData(f => ({ ...f, name: e.target.value }))} autoFocus disabled={!isAdmin} />
             </div>
             <div className="p-field">
               <label htmlFor="color">Color</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {/* ColorPicker expects value without #, so strip it for the component, but store with # */}
                 <ColorPicker
                   id="color"
                   value={formData.color.replace('#', '')}
                   onChange={e => setFormData(f => ({ ...f, color: `#${e.value}` }))}
                   format="hex"
                   style={{ width: 32, height: 32 }}
+                  disabled={!isAdmin}
                 />
-                {/* Color preview */}
                 <span style={{ width: 28, height: 28, background: formData.color, borderRadius: '50%', border: '1px solid #ccc', display: 'inline-block' }} />
                 <span style={{ fontFamily: 'monospace', fontSize: 13 }}>{formData.color}</span>
               </div>
@@ -206,11 +206,14 @@ const Settings: React.FC = () => {
                 }
                 style={{ width: '100%' }}
                 placeholder="Select icon"
+                disabled={!isAdmin}
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 24 }}>
               <Button label="Cancel" className="p-button-text" onClick={() => setShowDialog(false)} />
-              <Button label={editingCategory ? 'Update' : 'Create'} icon="pi pi-check" onClick={handleSave} loading={loading} />
+              {isAdmin && (
+                <Button label={editingCategory ? 'Update' : 'Create'} icon="pi pi-check" onClick={handleSave} loading={loading} />
+              )}
             </div>
           </Dialog>
         </TabPanel>

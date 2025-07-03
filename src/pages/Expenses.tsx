@@ -25,6 +25,7 @@ import type {
 } from '../utils/expenseService';
 import { categoryService } from '../utils/categoryService';
 import type { Category } from '../utils/categoryService';
+import { notificationService } from '../utils/notificationService';
 
 // Payment method options
 const paymentMethods = [
@@ -105,11 +106,11 @@ const Expenses: React.FC = () => {
       console.error('Load categories error:', error);
       // Fallback to default categories if API fails
       setCategories([
-        { _id: '1', name: 'Food & Dining', color: '#FF6B6B', icon: 'pi pi-utensils', isDefault: true, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { _id: '2', name: 'Transportation', color: '#4ECDC4', icon: 'pi pi-car', isDefault: true, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { _id: '3', name: 'Shopping', color: '#45B7D1', icon: 'pi pi-shopping-bag', isDefault: true, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { _id: '4', name: 'Entertainment', color: '#96CEB4', icon: 'pi pi-gamepad', isDefault: true, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { _id: '5', name: 'Bills & Utilities', color: '#FFEAA7', icon: 'pi pi-bolt', isDefault: true, isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+        { _id: '1', name: 'Food & Dining', color: '#FF6B6B', icon: 'pi pi-utensils',  isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { _id: '2', name: 'Transportation', color: '#4ECDC4', icon: 'pi pi-car',  isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { _id: '3', name: 'Shopping', color: '#45B7D1', icon: 'pi pi-shopping-bag',  isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { _id: '4', name: 'Entertainment', color: '#96CEB4', icon: 'pi pi-gamepad',  isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        { _id: '5', name: 'Bills & Utilities', color: '#FFEAA7', icon: 'pi pi-bolt',  isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
       ]);
     }
   };
@@ -216,7 +217,7 @@ const Expenses: React.FC = () => {
   };
 
   /**
-   * Handle form submission
+   * Handle form submission (create or update expense)
    */
   const handleSubmit = async () => {
     try {
@@ -226,8 +227,20 @@ const Expenses: React.FC = () => {
         await expenseService.updateExpense(editingExpense._id, formData);
         showToast('success', 'Success', 'Expense updated successfully');
       } else {
-        await expenseService.createExpense(formData);
+        const newExpense = await expenseService.createExpense(formData);
         showToast('success', 'Success', 'Expense created successfully');
+        
+        // Create notification for admin about new expense
+        try {
+          await notificationService.createNotification({
+            type: 'expense',
+            relatedExpense: newExpense.expense._id,
+            message: `New expense added: ${formData.description} - ${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(formData.amount)}`
+          });
+        } catch (notificationError) {
+          console.error('Failed to create notification:', notificationError);
+          // Don't show error to user as expense was created successfully
+        }
       }
       
       setShowDialog(false);

@@ -185,6 +185,29 @@ class CategoryService {
       throw error;
     }
   }
+
+  /**
+   * Toggle category active status (admin only)
+   */
+  async toggleCategoryStatus(id: string, isActive: boolean): Promise<{ message: string; category: Category }> {
+    try {
+      const response = await this.makeAuthRequest(`${API_BASE_URL}/categories/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isActive }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to toggle category status');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Toggle category status error:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

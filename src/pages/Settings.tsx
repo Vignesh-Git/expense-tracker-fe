@@ -8,8 +8,28 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
 import { Toast } from 'primereact/toast';
+import { ColorPicker } from 'primereact/colorpicker';
 import { categoryService } from '../utils/categoryService';
 import type { Category } from '../utils/categoryService';
+import { Dropdown } from 'primereact/dropdown';
+
+// Curated list of category icons with plain labels (no emoji)
+const primeIcons = [
+  { label: 'Home & Utilities', value: 'pi pi-home' },
+  { label: 'Food & Dining', value: 'pi pi-apple' },
+  { label: 'Transportation', value: 'pi pi-car' },
+  { label: 'Shopping', value: 'pi pi-shopping-bag' },
+  { label: 'Work & Business', value: 'pi pi-briefcase' },
+  { label: 'Health & Medical', value: 'pi pi-heart' },
+  { label: 'Education', value: 'pi pi-book' },
+  { label: 'Entertainment & Leisure', value: 'pi pi-star' },
+  { label: 'Travel', value: 'pi pi-globe' },
+  { label: 'Debt & Loans', value: 'pi pi-credit-card' },
+  { label: 'Investments & Savings', value: 'pi pi-chart-line' },
+  { label: 'Family & Kids', value: 'pi pi-users' },
+  { label: 'Pets', value: 'pi pi-discord' },
+  { label: 'Personal & Others', value: 'pi pi-user-edit' },
+];
 
 const Settings: React.FC = () => {
   // State for categories
@@ -140,12 +160,45 @@ const Settings: React.FC = () => {
             </div>
             <div className="p-field">
               <label htmlFor="color">Color</label>
-              <InputText id="color" value={formData.color} onChange={e => setFormData(f => ({ ...f, color: e.target.value }))} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {/* ColorPicker expects value without #, so strip it for the component, but store with # */}
+                <ColorPicker
+                  id="color"
+                  value={formData.color.replace('#', '')}
+                  onChange={e => setFormData(f => ({ ...f, color: `#${e.value}` }))}
+                  format="hex"
+                  style={{ width: 32, height: 32 }}
+                />
+                {/* Color preview */}
+                <span style={{ width: 28, height: 28, background: formData.color, borderRadius: '50%', border: '1px solid #ccc', display: 'inline-block' }} />
+                <span style={{ fontFamily: 'monospace', fontSize: 13 }}>{formData.color}</span>
+              </div>
             </div>
             <div className="p-field">
               <label htmlFor="icon">Icon</label>
-              <InputText id="icon" value={formData.icon} onChange={e => setFormData(f => ({ ...f, icon: e.target.value }))} />
-              <small>PrimeIcons class, e.g. <code>pi pi-tag</code></small>
+              <Dropdown
+                id="icon"
+                value={formData.icon}
+                options={primeIcons}
+                onChange={e => setFormData(f => ({ ...f, icon: e.value }))}
+                filter
+                showClear
+                optionLabel="label"
+                itemTemplate={(option) => (
+                  option && option.value ? (
+                    <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
+                  ) : null
+                )}
+                valueTemplate={(option, props) =>
+                  option && option.value ? (
+                    <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
+                  ) : (
+                    <span>Select an icon</span>
+                  )
+                }
+                style={{ width: '100%' }}
+                placeholder="Select icon"
+              />
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 24 }}>
               <Button label="Cancel" className="p-button-text" onClick={() => setShowDialog(false)} />

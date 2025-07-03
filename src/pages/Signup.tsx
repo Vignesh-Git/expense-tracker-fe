@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
@@ -14,7 +14,14 @@ import { useAuth } from '../utils/useAuth';
 const Signup: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signup, isLoading, error, clearError } = useAuth();
+  const { signup, isLoading, error, clearError, isAuthenticated } = useAuth();
+
+  // Redirect to home if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -89,8 +96,8 @@ const Signup: React.FC = () => {
         password: formData.password
       });
 
-      const from = location.state?.from?.pathname || '/';
-      navigate(from, { replace: true });
+      // Redirect to home page after successful signup
+      navigate('/', { replace: true });
     } catch (err: unknown) {
       // Error is already handled by the store
       console.error('Signup error:', err);

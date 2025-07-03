@@ -10,11 +10,13 @@ export interface Expense {
   description: string;
   date: string;
   paymentMethod: 'cash' | 'card' | 'bank_transfer' | 'digital_wallet' | 'other';
-  location?: string;
-  tags?: string[];
   isRecurring: boolean;
   recurringFrequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
   attachments?: string[];
+  approval: {
+    status: 'requested' | 'approved' | 'denied';
+    description: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -34,8 +36,6 @@ export interface CreateExpenseRequest {
   description: string;
   date?: string;
   paymentMethod?: 'cash' | 'card' | 'bank_transfer' | 'digital_wallet' | 'other';
-  location?: string;
-  tags?: string[];
   isRecurring?: boolean;
   recurringFrequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
 }

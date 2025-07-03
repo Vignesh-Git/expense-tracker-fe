@@ -61,15 +61,13 @@ const Expenses: React.FC = () => {
     sortOrder: 'desc'
   });
 
-  // Form state
+  // Remove location and tags from form state
   const [formData, setFormData] = useState<CreateExpenseRequest>({
     category: '',
     amount: 0,
     description: '',
     date: new Date().toISOString().split('T')[0],
     paymentMethod: 'cash',
-    location: '',
-    tags: [],
     isRecurring: false
   });
 
@@ -196,8 +194,6 @@ const Expenses: React.FC = () => {
       description: '',
       date: new Date().toISOString().split('T')[0],
       paymentMethod: 'cash',
-      location: '',
-      tags: [],
       isRecurring: false
     });
     setShowDialog(true);
@@ -214,8 +210,6 @@ const Expenses: React.FC = () => {
       description: expense.description,
       date: expense.date.split('T')[0],
       paymentMethod: expense.paymentMethod,
-      location: expense.location || '',
-      tags: expense.tags || [],
       isRecurring: expense.isRecurring
     });
     setShowDialog(true);
@@ -337,6 +331,20 @@ const Expenses: React.FC = () => {
     );
   };
 
+  // Helper to render approval status
+  const approvalStatusTemplate = (expense: Expense) => {
+    let severity: 'success' | 'info' | 'danger' = 'info';
+    let label = 'Requested';
+    if (expense.approval.status === 'approved') {
+      severity = 'success';
+      label = 'Approved';
+    } else if (expense.approval.status === 'denied') {
+      severity = 'danger';
+      label = 'Denied';
+    }
+    return <Tag value={label} severity={severity} />;
+  };
+
   return (
     <div className="w-full">
       {/* <Toast ref={(el) => setToast(el)} /> */}
@@ -426,7 +434,7 @@ const Expenses: React.FC = () => {
               <Column field="category" header="Category" body={categoryTemplate} />
               <Column field="amount" header="Amount" body={(expense) => formatAmount(expense.amount)} sortable />
               <Column field="paymentMethod" header="Payment Method" body={paymentMethodTemplate} />
-              <Column field="location" header="Location" />
+              <Column field="approval.status" header="Approval Status" body={approvalStatusTemplate} style={{ minWidth: 140 }} />
               <Column header="Actions" body={actionTemplate} style={{ width: '120px' }} />
             </DataTable>
             
@@ -521,26 +529,6 @@ const Expenses: React.FC = () => {
               value={formData.paymentMethod}
               options={paymentMethods}
               onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.value }))}
-              className="w-full"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Location</label>
-            <InputText
-              value={formData.location}
-              onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-              placeholder="Enter location"
-              className="w-full"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Tags</label>
-            <MultiSelect
-              value={formData.tags}
-              onChange={(e) => setFormData(prev => ({ ...prev, tags: e.value }))}
-              placeholder="Add tags"
               className="w-full"
             />
           </div>

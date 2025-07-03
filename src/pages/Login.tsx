@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { InputText } from 'primereact/inputtext';
@@ -10,7 +10,14 @@ import { useAuth } from '../utils/useAuth';
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, isLoading, error, clearError, isAuthenticated } = useAuth();
+
+  // Redirect to home if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -37,9 +44,8 @@ const Login: React.FC = () => {
         password: formData.password
       });
 
-      // Redirect to intended page or dashboard
-      const from = location.state?.from?.pathname || '/';
-      navigate(from, { replace: true });
+      // Redirect to home page after successful login
+      navigate('/', { replace: true });
     } catch (err: unknown) {
       // Error is already handled by the store
       console.error('Login error:', err);

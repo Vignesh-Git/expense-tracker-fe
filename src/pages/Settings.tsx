@@ -12,6 +12,7 @@ import { ColorPicker } from 'primereact/colorpicker';
 import { categoryService } from '../utils/categoryService';
 import type { Category } from '../utils/categoryService';
 import { Dropdown } from 'primereact/dropdown';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 // Curated list of category icons with plain labels (no emoji)
 const primeIcons = [
@@ -100,30 +101,36 @@ const Settings: React.FC = () => {
     }
   };
 
-  // Handle delete
-  const handleDelete = async (category: Category) => {
-    if (window.confirm(`Delete category '${category.name}'?`)) {
-      setLoading(true);
-      try {
-        await categoryService.deleteCategory(category._id);
-        showToast('success', 'Deleted', 'Category deleted');
-        loadCategories();
-      } catch (error: any) {
-        showToast('error', 'Error', error.message || 'Delete failed');
-      } finally {
-        setLoading(false);
-      }
-    }
+  // Handle delete with PrimeReact confirmation popup
+  const handleDelete = (category: Category) => {
+    confirmDialog({
+      message: `Are you sure you want to delete category '${category.name}'?`,
+      header: 'Delete Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      acceptClassName: 'p-button-danger',
+      accept: async () => {
+        setLoading(true);
+        try {
+          await categoryService.deleteCategory(category._id);
+          showToast('success', 'Deleted', 'Category deleted');
+          loadCategories();
+        } catch (error: any) {
+          showToast('error', 'Error', error.message || 'Delete failed');
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
-  // Table action buttons
+  // Table action buttons (icons horizontally)
   const actionTemplate = (cat: Category) => (
-    <>
-      <Button icon="pi pi-pencil" className="p-button-text p-mr-2" onClick={() => openDialog(cat)} tooltip="Edit" />
+    <div style={{ display: 'flex', flexDirection: 'row', gap: 8 }}>
+      <Button icon="pi pi-pencil" className="p-button-text" onClick={() => openDialog(cat)} tooltip="Edit" />
       {!cat.isDefault && (
         <Button icon="pi pi-trash" className="p-button-text p-button-danger" onClick={() => handleDelete(cat)} tooltip="Delete" />
       )}
-    </>
+    </div>
   );
 
   // Color and icon display
@@ -150,9 +157,10 @@ const Settings: React.FC = () => {
             <Column field="name" header="Name" sortable />
             <Column field="color" header="Color" body={colorTemplate} />
             <Column field="icon" header="Icon" body={iconTemplate} />
-            <Column field="isDefault" header="Default" body={cat => cat.isDefault ? <Tag value="Default" severity="info" /> : ''} />
+            {/* Removed Default column */}
             <Column header="Actions" body={actionTemplate} style={{ width: 120 }} />
           </DataTable>
+          <ConfirmDialog />
           <Dialog header={editingCategory ? 'Edit Category' : 'Add Category'} visible={showDialog} style={{ width: 400 }} onHide={() => setShowDialog(false)} modal className="p-fluid" draggable={false} resizable={false}>
             <div className="p-field">
               <label htmlFor="name">Name</label>

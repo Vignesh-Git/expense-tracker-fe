@@ -8,15 +8,8 @@ import Signup from './pages/Signup';
 import UserPage from './pages/User';
 import Expenses from './pages/Expenses';
 import Settings from './pages/Settings';
+import Dashboard from './pages/Dashboard';
 
-// Page components
-const Dashboard = () => (
-  <Card title="Dashboard" className="w-full">
-    <p className="m-0">
-      Welcome to your expense tracking dashboard. Here you can view your financial overview.
-    </p>
-  </Card>
-);
 
 
 

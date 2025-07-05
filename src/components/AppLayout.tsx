@@ -127,19 +127,7 @@ const Navigation = () => {
         </div>
       )}
 
-      {/* Logout Button */}
-      <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
-        <Button
-          label="Logout"
-          icon="pi pi-sign-out"
-          severity="secondary"
-          text
-          onClick={handleLogout}
-          loading={isLoading}
-          disabled={isLoading}
-          style={{ width: '100%', justifyContent: 'flex-start' }}
-        />
-      </div>
+      {/* Logout Button removed */}
     </nav>
   );
 };
@@ -149,7 +137,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc' }}>
       <Navigation />
-      <main style={{ flex: 1, padding: '2rem', marginLeft: 240 }}>{children}</main>
+      <main style={{ flex: 1, marginLeft: 240 }}>{children}</main>
     </div>
   );
 };

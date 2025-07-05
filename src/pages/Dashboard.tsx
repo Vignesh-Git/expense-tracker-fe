@@ -10,6 +10,7 @@ import { expenseService } from '../utils/expenseService';
 import { categoryService } from '../utils/categoryService';
 import SkeletonLoader from '../components/SkeletonLoader';
 import NoDataFound from '../components/NoDataFound';
+import PageHeader from '../components/PageHeader';
 
 const API_BASE_URL = 'http://localhost:5000';
 
@@ -70,57 +71,42 @@ const Dashboard: React.FC = () => {
   const renderUserDashboard = () => {
     if (loading) {
       return (
-        <div>
-          <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-            <Card style={{ flex: 1 }}>
-              <SkeletonLoader type="custom" height="4rem" />
-            </Card>
-            <Card style={{ flex: 1 }}>
-              <SkeletonLoader type="custom" height="4rem" />
-            </Card>
-            <Card style={{ flex: 1 }}>
-              <SkeletonLoader type="custom" height="4rem" />
-            </Card>
+        <div className="flex flex-column gap-4">
+          <div className="flex gap-4 mb-4">
+            <Card className="flex-1"><SkeletonLoader type="custom" height="4rem" /></Card>
+            <Card className="flex-1"><SkeletonLoader type="custom" height="4rem" /></Card>
+            <Card className="flex-1"><SkeletonLoader type="custom" height="4rem" /></Card>
           </div>
-          <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-            <Card title="Spending by Category" style={{ flex: 2 }}>
-              <SkeletonLoader type="chart" />
-            </Card>
-            <Card title="Spending Trend" style={{ flex: 3 }}>
-              <SkeletonLoader type="chart" />
-            </Card>
+          <div className="flex gap-4 mb-4">
+            <Card className="flex-2"><SkeletonLoader type="chart" /></Card>
+            <Card className="flex-3"><SkeletonLoader type="chart" /></Card>
           </div>
-          <Card title="Recent Expenses">
-            <SkeletonLoader type="table" count={5} />
-          </Card>
+          <Card title="Recent Expenses"><SkeletonLoader type="table" count={5} /></Card>
         </div>
       );
     }
-
     return (
-      <div>
-        <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-          <Card title="Total Spent (This Month)" style={{ flex: 1 }}>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>
-              ${userAnalytics?.summary?.totalSpending?.toFixed(2) || 0}
-            </div>
+      <div className="flex flex-column gap-4">
+        <div className="flex gap-4 mb-4">
+          <Card title="Total Spent (This Month)" className="flex-1">
+            <div className="text-2xl font-bold">${userAnalytics?.summary?.totalSpending?.toFixed(2) || 0}</div>
           </Card>
-          <Card title="Categories" style={{ flex: 1 }}>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>{categories.length}</div>
+          <Card title="Categories" className="flex-1">
+            <div className="text-2xl font-bold">{categories.length}</div>
           </Card>
-          <Card title="Recent Expenses" style={{ flex: 1 }}>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>{recentExpenses.length}</div>
+          <Card title="Recent Expenses" className="flex-1">
+            <div className="text-2xl font-bold">{recentExpenses.length}</div>
           </Card>
         </div>
-        <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-          <Card title="Spending by Category" style={{ flex: 2 }}>
+        <div className="flex gap-4 mb-4">
+          <Card title="Spending by Category" className="flex-2">
             {userAnalytics?.byCategory?.length > 0 ? (
               <Chart type="doughnut" data={getCategoryChartData(userAnalytics)} options={{ plugins: { legend: { position: 'bottom' } } }} />
             ) : (
               <NoDataFound type="categories" />
             )}
           </Card>
-          <Card title="Spending Trend" style={{ flex: 3 }}>
+          <Card title="Spending Trend" className="flex-3">
             {userAnalytics?.monthlyTrend?.length > 0 ? (
               <Chart type="line" data={getTrendChartData(userAnalytics)} options={{ plugins: { legend: { display: false } } }} />
             ) : (
@@ -144,65 +130,47 @@ const Dashboard: React.FC = () => {
       </div>
     );
   };
-
   // --- Admin Dashboard Layout ---
   const renderAdminDashboard = () => {
     if (loading) {
       return (
-        <div>
-          <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-            <Card style={{ flex: 1 }}>
-              <SkeletonLoader type="custom" height="4rem" />
-            </Card>
-            <Card style={{ flex: 1 }}>
-              <SkeletonLoader type="custom" height="4rem" />
-            </Card>
-            <Card style={{ flex: 1 }}>
-              <SkeletonLoader type="custom" height="4rem" />
-            </Card>
+        <div className="flex flex-column gap-4">
+          <div className="flex gap-4 mb-4">
+            <Card className="flex-1"><SkeletonLoader type="custom" height="4rem" /></Card>
+            <Card className="flex-1"><SkeletonLoader type="custom" height="4rem" /></Card>
+            <Card className="flex-1"><SkeletonLoader type="custom" height="4rem" /></Card>
           </div>
-          <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-            <Card title="Top Categories" style={{ flex: 2 }}>
-              <SkeletonLoader type="chart" />
-            </Card>
-            <Card title="Spending Trend (All Users)" style={{ flex: 3 }}>
-              <SkeletonLoader type="chart" />
-            </Card>
+          <div className="flex gap-4 mb-4">
+            <Card className="flex-2"><SkeletonLoader type="chart" /></Card>
+            <Card className="flex-3"><SkeletonLoader type="chart" /></Card>
           </div>
-          <Card title="Recent Expenses (All Users)">
-            <SkeletonLoader type="table" count={5} />
-          </Card>
-          <Card title="Pending Approvals">
-            <SkeletonLoader type="table" count={3} />
-          </Card>
+          <Card title="Recent Expenses (All Users)"><SkeletonLoader type="table" count={5} /></Card>
+          <Card title="Pending Approvals"><SkeletonLoader type="table" count={3} /></Card>
         </div>
       );
     }
-
     return (
-      <div>
-        <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-          <Card title="Total Spent (All Users)" style={{ flex: 1 }}>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>
-              ${adminAnalytics?.totalSpent?.toFixed(2) || 0}
-            </div>
+      <div className="flex flex-column gap-4">
+        <div className="flex gap-4 mb-4">
+          <Card title="Total Spent (All Users)" className="flex-1">
+            <div className="text-2xl font-bold">${adminAnalytics?.totalSpent?.toFixed(2) || 0}</div>
           </Card>
-          <Card title="Total Users" style={{ flex: 1 }}>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>{adminAnalytics?.userCount || 0}</div>
+          <Card title="Total Users" className="flex-1">
+            <div className="text-2xl font-bold">{adminAnalytics?.userCount || 0}</div>
           </Card>
-          <Card title="Pending Approvals" style={{ flex: 1 }}>
-            <div style={{ fontSize: 28, fontWeight: 700 }}>{pendingApprovals.length}</div>
+          <Card title="Pending Approvals" className="flex-1">
+            <div className="text-2xl font-bold">{pendingApprovals.length}</div>
           </Card>
         </div>
-        <div style={{ display: 'flex', gap: 24, marginBottom: 32 }}>
-          <Card title="Top Categories" style={{ flex: 2 }}>
+        <div className="flex gap-4 mb-4">
+          <Card title="Top Categories" className="flex-2">
             {adminAnalytics?.topCategories?.length > 0 ? (
               <Chart type="doughnut" data={getAdminCategoryChartData(adminAnalytics)} options={{ plugins: { legend: { position: 'bottom' } } }} />
             ) : (
               <NoDataFound type="categories" />
             )}
           </Card>
-          <Card title="Spending Trend (All Users)" style={{ flex: 3 }}>
+          <Card title="Spending Trend (All Users)" className="flex-3">
             {adminAnalytics?.monthlyTrend?.length > 0 ? (
               <Chart type="line" data={getAdminTrendChartData(adminAnalytics)} options={{ plugins: { legend: { display: false } } }} />
             ) : (
@@ -297,8 +265,8 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1rem' }}>
-      <h2 style={{ marginBottom: 32 }}>Dashboard</h2>
+    <div className="app-page-root">
+      <PageHeader title="Dashboard" />
       {isAdmin ? renderAdminDashboard() : renderUserDashboard()}
     </div>
   );

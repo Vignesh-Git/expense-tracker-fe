@@ -8,19 +8,18 @@ import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { InputNumber } from 'primereact/inputnumber';
-import { MultiSelect } from 'primereact/multiselect';
 import { Toast } from 'primereact/toast';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Tag } from 'primereact/tag';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import { Paginator } from 'primereact/paginator';
 import { expenseService } from '../utils/expenseService';
-import type { Expense, CreateExpenseRequest, UpdateExpenseRequest, ExpenseFilters } from '../utils/expenseService';
+import type { Expense, CreateExpenseRequest, ExpenseFilters } from '../utils/expenseService';
 import { categoryService } from '../utils/categoryService';
 import type { Category } from '../utils/categoryService';
 import { notificationService } from '../utils/notificationService';
 import SkeletonLoader from '../components/SkeletonLoader';
 import NoDataFound from '../components/NoDataFound';
+import PageHeader from '../components/PageHeader';
 
 // Payment method options
 const paymentMethods = [
@@ -354,179 +353,173 @@ const Expenses: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-column gap-4 w-full">
-      {/* <Toast ref={(el) => setToast(el)} /> */}
-      <ConfirmDialog />
-      
-      {/* Header */}
-      <Card>
-        <div className="flex justify-content-between align-items-center">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Expenses</h1>
-            <p className="text-gray-600">Manage and track your expenses</p>
+    <div className="app-page-root">
+      <PageHeader title="Expenses" subtitle="Manage and track your expenses">
+        <Button label="Add Expense" icon="pi pi-plus" onClick={openCreateDialog} className="p-button-primary" />
+      </PageHeader>
+      <div className="flex flex-column gap-4 w-full">
+        {/* <Toast ref={(el) => setToast(el)} /> */}
+        <ConfirmDialog />
+        
+        {/* Filters */}
+        <Card>
+          <div className="grid align-items-end gap-3">
+            <div className="col-12 md:col-3">
+              <InputText
+                placeholder="Search expenses..."
+                value={filters.search || ''}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+              />
+            </div>
+            <div className="col-12 md:col-3">
+              <Dropdown
+                placeholder="Select category"
+                value={filters.category || ''}
+                options={categories.map(cat => ({ label: cat.name, value: cat._id }))}
+                onChange={(e) => handleFilterChange('category', e.value)}
+                showClear
+              />
+            </div>
+            <div className="col-12 md:col-3">
+              <Dropdown
+                placeholder="Select payment method"
+                value={filters.paymentMethod || ''}
+                options={paymentMethods}
+                onChange={(e) => handleFilterChange('paymentMethod', e.value)}
+                showClear
+              />
+            </div>
+            <div className="col-12 md:col-3">
+              <Button
+                label="Reset"
+                icon="pi pi-refresh"
+                onClick={resetFilters}
+                className="p-button-outlined w-full"
+              />
+            </div>
           </div>
-          <Button label="Add Expense" icon="pi pi-plus" onClick={openCreateDialog} className="p-button-primary" />
-        </div>
-      </Card>
+        </Card>
 
-      {/* Filters */}
-      <Card>
-        <div className="grid align-items-end gap-3">
-          <div className="col-12 md:col-3">
-            <InputText
-              placeholder="Search expenses..."
-              value={filters.search || ''}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
+        {/* Expenses Table */}
+        <Card>
+          {loading ? (
+            <SkeletonLoader type="table" count={8} />
+          ) : expenses.length > 0 ? (
+            <>
+              <DataTable
+                value={expenses}
+                paginator={false}
+                className="mb-4"
+                stripedRows
+                showGridlines
+              >
+                <Column field="date" header="Date" body={(expense) => formatDate(expense.date)} sortable />
+                <Column field="description" header="Description" sortable />
+                <Column field="category" header="Category" body={categoryTemplate} />
+                <Column field="amount" header="Amount" body={(expense) => formatAmount(expense.amount)} sortable />
+                <Column field="paymentMethod" header="Payment Method" body={paymentMethodTemplate} />
+                <Column field="approval.status" header="Approval Status" body={approvalStatusTemplate} style={{ minWidth: 140 }} />
+                <Column header="Actions" body={actionTemplate} style={{ width: '120px' }} />
+              </DataTable>
+              <Paginator
+                first={(pagination.currentPage - 1) * pagination.itemsPerPage}
+                rows={pagination.itemsPerPage}
+                totalRecords={pagination.totalItems}
+                onPageChange={onPageChange}
+                template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+                rowsPerPageOptions={[5, 10, 20, 50]}
+              />
+            </>
+          ) : (
+            <NoDataFound
+              type="expenses"
+              onAction={openCreateDialog}
+              message={filters.search || filters.category || filters.paymentMethod
+                ? "No expenses match your current filters. Try adjusting your search criteria."
+                : "You haven't added any expenses yet. Start tracking your spending by adding your first expense."
+              }
             />
-          </div>
-          <div className="col-12 md:col-3">
-            <Dropdown
-              placeholder="Select category"
-              value={filters.category || ''}
-              options={categories.map(cat => ({ label: cat.name, value: cat._id }))}
-              onChange={(e) => handleFilterChange('category', e.value)}
-              showClear
-            />
-          </div>
-          <div className="col-12 md:col-3">
-            <Dropdown
-              placeholder="Select payment method"
-              value={filters.paymentMethod || ''}
-              options={paymentMethods}
-              onChange={(e) => handleFilterChange('paymentMethod', e.value)}
-              showClear
-            />
-          </div>
-          <div className="col-12 md:col-3">
-            <Button
-              label="Reset"
-              icon="pi pi-refresh"
-              onClick={resetFilters}
-              className="p-button-outlined w-full"
-            />
-          </div>
-        </div>
-      </Card>
+          )}
+        </Card>
 
-      {/* Expenses Table */}
-      <Card>
-        {loading ? (
-          <SkeletonLoader type="table" count={8} />
-        ) : expenses.length > 0 ? (
-          <>
-            <DataTable
-              value={expenses}
-              paginator={false}
-              className="mb-4"
-              stripedRows
-              showGridlines
-            >
-              <Column field="date" header="Date" body={(expense) => formatDate(expense.date)} sortable />
-              <Column field="description" header="Description" sortable />
-              <Column field="category" header="Category" body={categoryTemplate} />
-              <Column field="amount" header="Amount" body={(expense) => formatAmount(expense.amount)} sortable />
-              <Column field="paymentMethod" header="Payment Method" body={paymentMethodTemplate} />
-              <Column field="approval.status" header="Approval Status" body={approvalStatusTemplate} style={{ minWidth: 140 }} />
-              <Column header="Actions" body={actionTemplate} style={{ width: '120px' }} />
-            </DataTable>
-            <Paginator
-              first={(pagination.currentPage - 1) * pagination.itemsPerPage}
-              rows={pagination.itemsPerPage}
-              totalRecords={pagination.totalItems}
-              onPageChange={onPageChange}
-              template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-              currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-              rowsPerPageOptions={[5, 10, 20, 50]}
-            />
-          </>
-        ) : (
-          <NoDataFound
-            type="expenses"
-            onAction={openCreateDialog}
-            message={filters.search || filters.category || filters.paymentMethod
-              ? "No expenses match your current filters. Try adjusting your search criteria."
-              : "You haven't added any expenses yet. Start tracking your spending by adding your first expense."
-            }
-          />
-        )}
-      </Card>
-
-      {/* Create/Edit Dialog */}
-      <Dialog
-        visible={showDialog}
-        onHide={() => setShowDialog(false)}
-        header={editingExpense ? 'Edit Expense' : 'Add New Expense'}
-        modal
-        className="w-full max-w-2xl"
-        footer={
-          <div className="flex justify-content-end gap-2">
-            <Button
-              label="Cancel"
-              icon="pi pi-times"
-              onClick={() => setShowDialog(false)}
-              className="p-button-text"
-            />
-            <Button
-              label={editingExpense ? 'Update' : 'Create'}
-              icon="pi pi-check"
-              onClick={handleSubmit}
-              loading={submitting}
-              className="p-button-primary"
-            />
+        {/* Create/Edit Dialog */}
+        <Dialog
+          visible={showDialog}
+          onHide={() => setShowDialog(false)}
+          header={editingExpense ? 'Edit Expense' : 'Add New Expense'}
+          modal
+          className="w-full max-w-2xl"
+          footer={
+            <div className="flex justify-content-end gap-2">
+              <Button
+                label="Cancel"
+                icon="pi pi-times"
+                onClick={() => setShowDialog(false)}
+                className="p-button-text"
+              />
+              <Button
+                label={editingExpense ? 'Update' : 'Create'}
+                icon="pi pi-check"
+                onClick={handleSubmit}
+                loading={submitting}
+                className="p-button-primary"
+              />
+            </div>
+          }
+        >
+          <div className="grid gap-3">
+            <div className="col-12 md:col-6">
+              <Dropdown
+                placeholder="Select category"
+                value={formData.category}
+                options={categories.map(cat => ({ label: cat.name, value: cat._id }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.value }))}
+                showClear
+                className="w-full"
+              />
+            </div>
+            <div className="col-12 md:col-6">
+              <InputNumber
+                value={formData.amount}
+                onValueChange={(e) => setFormData(prev => ({ ...prev, amount: e.value || 0 }))}
+                mode="currency"
+                currency="USD"
+                className="w-full"
+              />
+            </div>
+            <div className="col-12">
+              <InputText
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Enter expense description"
+                className="w-full"
+              />
+            </div>
+            <div className="col-12 md:col-6">
+              <Calendar
+                value={formData.date ? new Date(formData.date) : null}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  date: e.value ? new Date(e.value).toISOString().split('T')[0] : ''
+                }))}
+                dateFormat="yy-mm-dd"
+                className="w-full"
+              />
+            </div>
+            <div className="col-12 md:col-6">
+              <Dropdown
+                placeholder="Select payment method"
+                value={formData.paymentMethod}
+                options={paymentMethods}
+                onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.value }))}
+                showClear
+                className="w-full"
+              />
+            </div>
           </div>
-        }
-      >
-        <div className="grid gap-3">
-          <div className="col-12 md:col-6">
-            <Dropdown
-              placeholder="Select category"
-              value={formData.category}
-              options={categories.map(cat => ({ label: cat.name, value: cat._id }))}
-              onChange={(e) => setFormData(prev => ({ ...prev, category: e.value }))}
-              showClear
-              className="w-full"
-            />
-          </div>
-          <div className="col-12 md:col-6">
-            <InputNumber
-              value={formData.amount}
-              onValueChange={(e) => setFormData(prev => ({ ...prev, amount: e.value || 0 }))}
-              mode="currency"
-              currency="USD"
-              className="w-full"
-            />
-          </div>
-          <div className="col-12">
-            <InputText
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Enter expense description"
-              className="w-full"
-            />
-          </div>
-          <div className="col-12 md:col-6">
-            <Calendar
-              value={formData.date ? new Date(formData.date) : null}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                date: e.value ? new Date(e.value).toISOString().split('T')[0] : ''
-              }))}
-              dateFormat="yy-mm-dd"
-              className="w-full"
-            />
-          </div>
-          <div className="col-12 md:col-6">
-            <Dropdown
-              placeholder="Select payment method"
-              value={formData.paymentMethod}
-              options={paymentMethods}
-              onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.value }))}
-              showClear
-              className="w-full"
-            />
-          </div>
-        </div>
-      </Dialog>
+        </Dialog>
+      </div>
     </div>
   );
 };

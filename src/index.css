@@ -173,3 +173,10 @@
   transition: opacity 300ms, transform 300ms;
 }
 
+/* Global app page root layout */
+.app-page-root {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+

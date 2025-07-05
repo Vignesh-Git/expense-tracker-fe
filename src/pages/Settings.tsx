@@ -18,6 +18,7 @@ import { notificationService } from '../utils/notificationService';
 import type { Notification } from '../utils/notificationService';
 import SkeletonLoader from '../components/SkeletonLoader';
 import NoDataFound from '../components/NoDataFound';
+import PageHeader from '../components/PageHeader';
 
 // Curated list of category icons with plain labels (no emoji)
 const primeIcons = [
@@ -271,238 +272,210 @@ const Settings: React.FC = () => {
   );
 
   return (
-    <Card title="Settings" style={{ margin: '2rem auto', maxWidth: 900 }}>
-      <Toast ref={setToast} />
-      <TabView activeIndex={activeTab} onTabChange={e => setActiveTab(e.index)}>
-        <TabPanel header="Category">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ margin: 0 }}>{isAdmin ? 'Manage Categories' : 'Categories'}</h3>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {!isAdmin && (
-                <Button 
-                  label="Request Category" 
-                  icon="pi pi-plus" 
-                  className="p-button-outlined"
-                  onClick={() => setShowRequestDialog(true)}
-                />
-              )}
-              {isAdmin && (
-                <Button label="Add Category" icon="pi pi-plus" onClick={() => openDialog()} />
-              )}
+    <div className="app-page-root">
+      <PageHeader title="Settings" />
+      <Card>
+        <Toast ref={setToast} />
+        <TabView activeIndex={activeTab} onTabChange={e => setActiveTab(e.index)}>
+          <TabPanel header="Category">
+            <div className="flex align-items-center justify-content-between mb-4">
+              <h3 className="m-0 font-bold text-xl">{isAdmin ? 'Manage Categories' : 'Categories'}</h3>
+              <div className="flex gap-2">
+                {!isAdmin && (
+                  <Button label="Request Category" icon="pi pi-plus" className="p-button-outlined" onClick={() => setShowRequestDialog(true)} />
+                )}
+                {isAdmin && (
+                  <Button label="Add Category" icon="pi pi-plus" onClick={() => openDialog()} />
+                )}
+              </div>
             </div>
-          </div>
-          {loading ? (
-            <SkeletonLoader type="table" count={8} />
-          ) : categories.length > 0 ? (
-            <DataTable value={categories} responsiveLayout="scroll" paginator rows={8} style={{ minHeight: 300 }}>
+            <DataTable value={categories} loading={loading} responsiveLayout="scroll" paginator rows={8} style={{ minHeight: 300 }}>
               <Column field="name" header="Name" sortable />
               <Column field="color" header="Color" body={colorTemplate} />
               <Column field="icon" header="Icon" body={iconTemplate} />
               <Column field="isActive" header="Status" body={statusTemplate} />
               {isAdmin && <Column header="Actions" body={actionTemplate} style={{ width: 120 }} />}
             </DataTable>
-          ) : (
-            <NoDataFound 
-              type="categories" 
-              onAction={() => openDialog()}
-              message="No categories have been created yet. Create categories to better organize your expenses."
-            />
-          )}
-          <ConfirmDialog />
-          <Dialog header={editingCategory ? 'Edit Category' : 'Add Category'} visible={showDialog} style={{ width: 400 }} onHide={() => setShowDialog(false)} modal className="p-fluid" draggable={false} resizable={false}>
-            <div className="p-field">
-              <label htmlFor="name">Name</label>
-              <InputText id="name" value={formData.name} onChange={e => setFormData(f => ({ ...f, name: e.target.value }))} autoFocus disabled={!isAdmin} />
-            </div>
-            <div className="p-field">
-              <label htmlFor="color">Color</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <ColorPicker
-                  id="color"
-                  value={formData.color.replace('#', '')}
-                  onChange={e => setFormData(f => ({ ...f, color: `#${e.value}` }))}
-                  format="hex"
-                  style={{ width: 32, height: 32 }}
+            <ConfirmDialog />
+            <Dialog header={editingCategory ? 'Edit Category' : 'Add Category'} visible={showDialog} style={{ width: 400 }} onHide={() => setShowDialog(false)} modal className="p-fluid" draggable={false} resizable={false}>
+              <div className="flex flex-column gap-3">
+                <InputText id="name" value={formData.name} onChange={e => setFormData(f => ({ ...f, name: e.target.value }))} autoFocus disabled={!isAdmin} placeholder="Name" />
+                <div className="flex align-items-center gap-2">
+                  <ColorPicker
+                    id="color"
+                    value={formData.color.replace('#', '')}
+                    onChange={e => setFormData(f => ({ ...f, color: `#${e.value}` }))}
+                    format="hex"
+                    style={{ width: 32, height: 32 }}
+                    disabled={!isAdmin}
+                  />
+                  <span style={{ width: 28, height: 28, background: formData.color, borderRadius: '50%', border: '1px solid #ccc', display: 'inline-block' }} />
+                  <span className="font-monospace text-sm">{formData.color}</span>
+                </div>
+                <Dropdown
+                  id="icon"
+                  value={formData.icon}
+                  options={primeIcons}
+                  onChange={e => setFormData(f => ({ ...f, icon: e.value }))}
+                  filter
+                  showClear
+                  optionLabel="label"
+                  itemTemplate={(option) => (
+                    option && option.value ? (
+                      <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
+                    ) : null
+                  )}
+                  valueTemplate={(option, props) =>
+                    option && option.value ? (
+                      <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
+                    ) : (
+                      <span>Select an icon</span>
+                    )
+                  }
+                  style={{ width: '100%' }}
+                  placeholder="Select icon"
                   disabled={!isAdmin}
                 />
-                <span style={{ width: 28, height: 28, background: formData.color, borderRadius: '50%', border: '1px solid #ccc', display: 'inline-block' }} />
-                <span style={{ fontFamily: 'monospace', fontSize: 13 }}>{formData.color}</span>
-              </div>
-            </div>
-            <div className="p-field">
-              <label htmlFor="icon">Icon</label>
-              <Dropdown
-                id="icon"
-                value={formData.icon}
-                options={primeIcons}
-                onChange={e => setFormData(f => ({ ...f, icon: e.value }))}
-                filter
-                showClear
-                optionLabel="label"
-                itemTemplate={(option) => (
-                  option && option.value ? (
-                    <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
-                  ) : null
-                )}
-                valueTemplate={(option, props) =>
-                  option && option.value ? (
-                    <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
-                  ) : (
-                    <span>Select an icon</span>
-                  )
-                }
-                style={{ width: '100%' }}
-                placeholder="Select icon"
-                disabled={!isAdmin}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 24 }}>
-              <Button label="Cancel" className="p-button-text" onClick={() => setShowDialog(false)} />
-              {isAdmin && (
-                <Button label={editingCategory ? 'Update' : 'Create'} icon="pi pi-check" onClick={handleSave} loading={loading} />
-              )}
-            </div>
-          </Dialog>
-
-          {/* Category Request Dialog */}
-          <Dialog header="Request New Category" visible={showRequestDialog} style={{ width: 400 }} onHide={() => setShowRequestDialog(false)} modal className="p-fluid" draggable={false} resizable={false}>
-            <div className="p-field">
-              <label htmlFor="requestName">Category Name</label>
-              <InputText 
-                id="requestName" 
-                value={requestFormData.name} 
-                onChange={e => setRequestFormData(f => ({ ...f, name: e.target.value }))} 
-                autoFocus 
-                placeholder="Enter category name"
-              />
-            </div>
-            <div className="p-field">
-              <label htmlFor="requestColor">Color</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <ColorPicker
-                  id="requestColor"
-                  value={requestFormData.color.replace('#', '')}
-                  onChange={e => setRequestFormData(f => ({ ...f, color: `#${e.value}` }))}
-                  format="hex"
-                  style={{ width: 32, height: 32 }}
-                />
-                <span style={{ width: 28, height: 28, background: requestFormData.color, borderRadius: '50%', border: '1px solid #ccc', display: 'inline-block' }} />
-                <span style={{ fontFamily: 'monospace', fontSize: 13 }}>{requestFormData.color}</span>
-              </div>
-            </div>
-            <div className="p-field">
-              <label htmlFor="requestIcon">Icon</label>
-              <Dropdown
-                id="requestIcon"
-                value={requestFormData.icon}
-                options={primeIcons}
-                onChange={e => setRequestFormData(f => ({ ...f, icon: e.value }))}
-                filter
-                showClear
-                optionLabel="label"
-                itemTemplate={(option) => (
-                  option && option.value ? (
-                    <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
-                  ) : null
-                )}
-                valueTemplate={(option, props) =>
-                  option && option.value ? (
-                    <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
-                  ) : (
-                    <span>Select an icon</span>
-                  )
-                }
-                style={{ width: '100%' }}
-                placeholder="Select icon"
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 24 }}>
-              <Button label="Cancel" className="p-button-text" onClick={() => setShowRequestDialog(false)} />
-              <Button label="Submit Request" icon="pi pi-send" onClick={handleCategoryRequest} loading={loading} />
-            </div>
-          </Dialog>
-        </TabPanel>
-        <TabPanel header="Notifications">
-          <div style={{ display: 'flex', gap: 24 }}>
-            <div style={{ flex: 1, minWidth: 320 }}>
-              <h3 style={{ marginBottom: 12 }}>Notifications</h3>
-              {loading ? (
-                <SkeletonLoader type="list" count={5} />
-              ) : notifications.length > 0 ? (
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                  {notifications.map(n => (
-                    <li key={n._id} style={{ marginBottom: 8 }}>
-                      <Button
-                        label={`${n.type === 'category' ? 'Category' : 'Expense'}: ${n.status}`}
-                        className={`p-button-sm p-button-${n.status === 'approved' ? 'success' : n.status === 'denied' ? 'danger' : 'info'}`}
-                        onClick={() => handleSelectNotification(n)}
-                        style={{ width: '100%', textAlign: 'left', marginBottom: 4 }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <NoDataFound type="notifications" />
-              )}
-            </div>
-            <div style={{ flex: 2, minWidth: 400 }}>
-              {selectedNotification ? (
-                <div>
-                  <h4>Conversation</h4>
-                  <div style={{ maxHeight: 300, overflowY: 'auto', border: '1px solid #eee', borderRadius: 6, padding: 12, marginBottom: 16 }}>
-                    {selectedNotification.messages.map((m, i) => (
-                      <div key={i} style={{ marginBottom: 10 }}>
-                        <b style={{ color: m.sender === 'admin' ? '#2196f3' : '#374151' }}>{m.sender === 'admin' ? 'Admin' : 'You'}:</b>
-                        <span style={{ marginLeft: 8 }}>{m.message}</span>
-                        <span style={{ float: 'right', color: '#888', fontSize: 12 }}>{new Date(m.timestamp).toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                    <InputText
-                      value={replyMessage}
-                      onChange={e => setReplyMessage(e.target.value)}
-                      placeholder="Type your reply..."
-                      style={{ flex: 1 }}
-                    />
-                    <Button label="Reply" icon="pi pi-send" onClick={handleReply} disabled={!replyMessage.trim()} />
-                  </div>
-                  {isAdmin && selectedNotification.status === 'requested' && (
-                    <div style={{ marginTop: 16 }}>
-                      <h5>Approve or Deny</h5>
-                      <InputText
-                        value={statusRemark}
-                        onChange={e => setStatusRemark(e.target.value)}
-                        placeholder="Remarks (required)"
-                        style={{ width: '100%', marginBottom: 8 }}
-                      />
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <Button
-                          label="Approve"
-                          icon="pi pi-check"
-                          className="p-button-success"
-                          onClick={() => handleStatus('approved')}
-                          disabled={!statusRemark.trim()}
-                        />
-                        <Button
-                          label="Deny"
-                          icon="pi pi-times"
-                          className="p-button-danger"
-                          onClick={() => handleStatus('denied')}
-                          disabled={!statusRemark.trim()}
-                        />
-                      </div>
-                    </div>
+                <div className="flex justify-content-end gap-2 mt-3">
+                  <Button label="Cancel" className="p-button-text" onClick={() => setShowDialog(false)} />
+                  {isAdmin && (
+                    <Button label={editingCategory ? 'Update' : 'Create'} icon="pi pi-check" onClick={handleSave} loading={loading} />
                   )}
                 </div>
-              ) : (
-                <div style={{ color: '#888' }}>Select a notification to view details.</div>
-              )}
+              </div>
+            </Dialog>
+            {/* Category Request Dialog */}
+            <Dialog header="Request New Category" visible={showRequestDialog} style={{ width: 400 }} onHide={() => setShowRequestDialog(false)} modal className="p-fluid" draggable={false} resizable={false}>
+              <div className="flex flex-column gap-3">
+                <InputText 
+                  id="requestName" 
+                  value={requestFormData.name} 
+                  onChange={e => setRequestFormData(f => ({ ...f, name: e.target.value }))} 
+                  autoFocus 
+                  placeholder="Enter category name"
+                />
+                <div className="flex align-items-center gap-2">
+                  <ColorPicker
+                    id="requestColor"
+                    value={requestFormData.color.replace('#', '')}
+                    onChange={e => setRequestFormData(f => ({ ...f, color: `#${e.value}` }))}
+                    format="hex"
+                    style={{ width: 32, height: 32 }}
+                  />
+                  <span style={{ width: 28, height: 28, background: requestFormData.color, borderRadius: '50%', border: '1px solid #ccc', display: 'inline-block' }} />
+                  <span className="font-monospace text-sm">{requestFormData.color}</span>
+                </div>
+                <Dropdown
+                  id="requestIcon"
+                  value={requestFormData.icon}
+                  options={primeIcons}
+                  onChange={e => setRequestFormData(f => ({ ...f, icon: e.value }))}
+                  filter
+                  showClear
+                  optionLabel="label"
+                  itemTemplate={(option) => (
+                    option && option.value ? (
+                      <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
+                    ) : null
+                  )}
+                  valueTemplate={(option, props) =>
+                    option && option.value ? (
+                      <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
+                    ) : (
+                      <span>Select an icon</span>
+                    )
+                  }
+                  style={{ width: '100%' }}
+                  placeholder="Select icon"
+                />
+                <div className="flex justify-content-end gap-2 mt-3">
+                  <Button label="Cancel" className="p-button-text" onClick={() => setShowRequestDialog(false)} />
+                  <Button label="Submit Request" icon="pi pi-send" onClick={handleCategoryRequest} loading={loading} />
+                </div>
+              </div>
+            </Dialog>
+          </TabPanel>
+          <TabPanel header="Notifications">
+            <div className="flex gap-4">
+              <div className="flex-1 min-w-20rem">
+                <h3 className="mb-3 font-bold text-lg">Notifications</h3>
+                {loading ? (
+                  <SkeletonLoader type="list" count={5} />
+                ) : notifications.length > 0 ? (
+                  <ul className="list-none p-0 m-0">
+                    {notifications.map(n => (
+                      <li key={n._id} className="mb-2">
+                        <Button
+                          label={`${n.type === 'category' ? 'Category' : 'Expense'}: ${n.status}`}
+                          className={`p-button-sm p-button-${n.status === 'approved' ? 'success' : n.status === 'denied' ? 'danger' : 'info'} w-full text-left mb-1`}
+                          onClick={() => handleSelectNotification(n)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <NoDataFound type="notifications" />
+                )}
+              </div>
+              <div className="flex-2 min-w-25rem">
+                {selectedNotification ? (
+                  <div className="flex flex-column gap-3">
+                    <h4 className="m-0 font-bold">Conversation</h4>
+                    <div className="border-round border-1 p-3 mb-3" style={{ maxHeight: 300, overflowY: 'auto' }}>
+                      {selectedNotification.messages.map((m, i) => (
+                        <div key={i} className="mb-2">
+                          <b className={m.sender === 'admin' ? 'text-primary' : 'text-900'}>{m.sender === 'admin' ? 'Admin' : 'You'}:</b>
+                          <span className="ml-2">{m.message}</span>
+                          <span className="float-right text-500 text-xs">{new Date(m.timestamp).toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 mb-2">
+                      <InputText
+                        value={replyMessage}
+                        onChange={e => setReplyMessage(e.target.value)}
+                        placeholder="Type your reply..."
+                        className="flex-1"
+                      />
+                      <Button label="Reply" icon="pi pi-send" onClick={handleReply} disabled={!replyMessage.trim()} />
+                    </div>
+                    {isAdmin && selectedNotification.status === 'requested' && (
+                      <div className="flex flex-column gap-2 mt-2">
+                        <h5 className="m-0">Approve or Deny</h5>
+                        <InputText
+                          value={statusRemark}
+                          onChange={e => setStatusRemark(e.target.value)}
+                          placeholder="Remarks (required)"
+                          className="w-full mb-2"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            label="Approve"
+                            icon="pi pi-check"
+                            className="p-button-success"
+                            onClick={() => handleStatus('approved')}
+                            disabled={!statusRemark.trim()}
+                          />
+                          <Button
+                            label="Deny"
+                            icon="pi pi-times"
+                            className="p-button-danger"
+                            onClick={() => handleStatus('denied')}
+                            disabled={!statusRemark.trim()}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <NoDataFound type="notifications" />
+                )}
+              </div>
             </div>
-          </div>
-        </TabPanel>
-      </TabView>
-    </Card>
+          </TabPanel>
+        </TabView>
+      </Card>
+    </div>
   );
 };
 

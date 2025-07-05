@@ -14,15 +14,8 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Tag } from 'primereact/tag';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Paginator } from 'primereact/paginator';
-import { 
-  expenseService
-} from '../utils/expenseService';
-import type { 
-  Expense, 
-  CreateExpenseRequest, 
-  UpdateExpenseRequest, 
-  ExpenseFilters
-} from '../utils/expenseService';
+import { expenseService } from '../utils/expenseService';
+import type { Expense, CreateExpenseRequest, UpdateExpenseRequest, ExpenseFilters } from '../utils/expenseService';
 import { categoryService } from '../utils/categoryService';
 import type { Category } from '../utils/categoryService';
 import { notificationService } from '../utils/notificationService';
@@ -361,69 +354,55 @@ const Expenses: React.FC = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="flex flex-column gap-4 w-full">
       {/* <Toast ref={(el) => setToast(el)} /> */}
       <ConfirmDialog />
       
       {/* Header */}
-      <Card className="mb-4">
-        <div className="flex justify-between items-center">
+      <Card>
+        <div className="flex justify-content-between align-items-center">
           <div>
             <h1 className="text-2xl font-bold mb-2">Expenses</h1>
             <p className="text-gray-600">Manage and track your expenses</p>
           </div>
-          <Button 
-            label="Add Expense" 
-            icon="pi pi-plus" 
-            onClick={openCreateDialog}
-            className="p-button-primary"
-          />
+          <Button label="Add Expense" icon="pi pi-plus" onClick={openCreateDialog} className="p-button-primary" />
         </div>
       </Card>
 
       {/* Filters */}
-      <Card className="mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Search</label>
+      <Card>
+        <div className="grid align-items-end gap-3">
+          <div className="col-12 md:col-3">
             <InputText
               placeholder="Search expenses..."
               value={filters.search || ''}
               onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="w-full"
             />
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Category</label>
+          <div className="col-12 md:col-3">
             <Dropdown
               placeholder="Select category"
               value={filters.category || ''}
               options={categories.map(cat => ({ label: cat.name, value: cat._id }))}
               onChange={(e) => handleFilterChange('category', e.value)}
-              className="w-full"
               showClear
             />
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Payment Method</label>
+          <div className="col-12 md:col-3">
             <Dropdown
               placeholder="Select payment method"
               value={filters.paymentMethod || ''}
               options={paymentMethods}
               onChange={(e) => handleFilterChange('paymentMethod', e.value)}
-              className="w-full"
               showClear
             />
           </div>
-          
-          <div className="flex gap-2 items-end">
-            <Button 
-              label="Reset" 
-              icon="pi pi-refresh" 
+          <div className="col-12 md:col-3">
+            <Button
+              label="Reset"
+              icon="pi pi-refresh"
               onClick={resetFilters}
-              className="p-button-outlined"
+              className="p-button-outlined w-full"
             />
           </div>
         </div>
@@ -435,8 +414,8 @@ const Expenses: React.FC = () => {
           <SkeletonLoader type="table" count={8} />
         ) : expenses.length > 0 ? (
           <>
-            <DataTable 
-              value={expenses} 
+            <DataTable
+              value={expenses}
               paginator={false}
               className="mb-4"
               stripedRows
@@ -450,7 +429,6 @@ const Expenses: React.FC = () => {
               <Column field="approval.status" header="Approval Status" body={approvalStatusTemplate} style={{ minWidth: 140 }} />
               <Column header="Actions" body={actionTemplate} style={{ width: '120px' }} />
             </DataTable>
-            
             <Paginator
               first={(pagination.currentPage - 1) * pagination.itemsPerPage}
               rows={pagination.itemsPerPage}
@@ -462,11 +440,11 @@ const Expenses: React.FC = () => {
             />
           </>
         ) : (
-          <NoDataFound 
-            type="expenses" 
+          <NoDataFound
+            type="expenses"
             onAction={openCreateDialog}
-            message={filters.search || filters.category || filters.paymentMethod 
-              ? "No expenses match your current filters. Try adjusting your search criteria." 
+            message={filters.search || filters.category || filters.paymentMethod
+              ? "No expenses match your current filters. Try adjusting your search criteria."
               : "You haven't added any expenses yet. Start tracking your spending by adding your first expense."
             }
           />
@@ -481,16 +459,16 @@ const Expenses: React.FC = () => {
         modal
         className="w-full max-w-2xl"
         footer={
-          <div className="flex justify-end gap-2">
-            <Button 
-              label="Cancel" 
-              icon="pi pi-times" 
+          <div className="flex justify-content-end gap-2">
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
               onClick={() => setShowDialog(false)}
               className="p-button-text"
             />
-            <Button 
-              label={editingExpense ? 'Update' : 'Create'} 
-              icon="pi pi-check" 
+            <Button
+              label={editingExpense ? 'Update' : 'Create'}
+              icon="pi pi-check"
               onClick={handleSubmit}
               loading={submitting}
               className="p-button-primary"
@@ -498,20 +476,18 @@ const Expenses: React.FC = () => {
           </div>
         }
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Category *</label>
+        <div className="grid gap-3">
+          <div className="col-12 md:col-6">
             <Dropdown
               placeholder="Select category"
               value={formData.category}
               options={categories.map(cat => ({ label: cat.name, value: cat._id }))}
               onChange={(e) => setFormData(prev => ({ ...prev, category: e.value }))}
+              showClear
               className="w-full"
             />
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Amount *</label>
+          <div className="col-12 md:col-6">
             <InputNumber
               value={formData.amount}
               onValueChange={(e) => setFormData(prev => ({ ...prev, amount: e.value || 0 }))}
@@ -520,9 +496,7 @@ const Expenses: React.FC = () => {
               className="w-full"
             />
           </div>
-          
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-2">Description *</label>
+          <div className="col-12">
             <InputText
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -530,27 +504,24 @@ const Expenses: React.FC = () => {
               className="w-full"
             />
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Date</label>
+          <div className="col-12 md:col-6">
             <Calendar
               value={formData.date ? new Date(formData.date) : null}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
                 date: e.value ? new Date(e.value).toISOString().split('T')[0] : ''
               }))}
               dateFormat="yy-mm-dd"
               className="w-full"
             />
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Payment Method</label>
+          <div className="col-12 md:col-6">
             <Dropdown
               placeholder="Select payment method"
               value={formData.paymentMethod}
               options={paymentMethods}
               onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.value }))}
+              showClear
               className="w-full"
             />
           </div>

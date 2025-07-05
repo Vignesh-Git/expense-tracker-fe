@@ -111,10 +111,10 @@
   }
 }
 
-/* Smooth transitions for all components */
+/* Smooth transitions for all components
 * {
   transition: all 0.2s ease-in-out;
-}
+} */
 
 /* Card hover effects */
 .p-card {

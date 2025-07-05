@@ -16,6 +16,8 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { useAuth } from '../utils/useAuth';
 import { notificationService } from '../utils/notificationService';
 import type { Notification } from '../utils/notificationService';
+import SkeletonLoader from '../components/SkeletonLoader';
+import NoDataFound from '../components/NoDataFound';
 
 // Curated list of category icons with plain labels (no emoji)
 const primeIcons = [
@@ -289,13 +291,23 @@ const Settings: React.FC = () => {
               )}
             </div>
           </div>
-          <DataTable value={categories} loading={loading} responsiveLayout="scroll" paginator rows={8} style={{ minHeight: 300 }}>
-            <Column field="name" header="Name" sortable />
-            <Column field="color" header="Color" body={colorTemplate} />
-            <Column field="icon" header="Icon" body={iconTemplate} />
-            <Column field="isActive" header="Status" body={statusTemplate} />
-            {isAdmin && <Column header="Actions" body={actionTemplate} style={{ width: 120 }} />}
-          </DataTable>
+          {loading ? (
+            <SkeletonLoader type="table" count={8} />
+          ) : categories.length > 0 ? (
+            <DataTable value={categories} responsiveLayout="scroll" paginator rows={8} style={{ minHeight: 300 }}>
+              <Column field="name" header="Name" sortable />
+              <Column field="color" header="Color" body={colorTemplate} />
+              <Column field="icon" header="Icon" body={iconTemplate} />
+              <Column field="isActive" header="Status" body={statusTemplate} />
+              {isAdmin && <Column header="Actions" body={actionTemplate} style={{ width: 120 }} />}
+            </DataTable>
+          ) : (
+            <NoDataFound 
+              type="categories" 
+              onAction={() => openDialog()}
+              message="No categories have been created yet. Create categories to better organize your expenses."
+            />
+          )}
           <ConfirmDialog />
           <Dialog header={editingCategory ? 'Edit Category' : 'Add Category'} visible={showDialog} style={{ width: 400 }} onHide={() => setShowDialog(false)} modal className="p-fluid" draggable={false} resizable={false}>
             <div className="p-field">
@@ -414,18 +426,24 @@ const Settings: React.FC = () => {
           <div style={{ display: 'flex', gap: 24 }}>
             <div style={{ flex: 1, minWidth: 320 }}>
               <h3 style={{ marginBottom: 12 }}>Notifications</h3>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {notifications.map(n => (
-                  <li key={n._id} style={{ marginBottom: 8 }}>
-                    <Button
-                      label={`${n.type === 'category' ? 'Category' : 'Expense'}: ${n.status}`}
-                      className={`p-button-sm p-button-${n.status === 'approved' ? 'success' : n.status === 'denied' ? 'danger' : 'info'}`}
-                      onClick={() => handleSelectNotification(n)}
-                      style={{ width: '100%', textAlign: 'left', marginBottom: 4 }}
-                    />
-                  </li>
-                ))}
-              </ul>
+              {loading ? (
+                <SkeletonLoader type="list" count={5} />
+              ) : notifications.length > 0 ? (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                  {notifications.map(n => (
+                    <li key={n._id} style={{ marginBottom: 8 }}>
+                      <Button
+                        label={`${n.type === 'category' ? 'Category' : 'Expense'}: ${n.status}`}
+                        className={`p-button-sm p-button-${n.status === 'approved' ? 'success' : n.status === 'denied' ? 'danger' : 'info'}`}
+                        onClick={() => handleSelectNotification(n)}
+                        style={{ width: '100%', textAlign: 'left', marginBottom: 4 }}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <NoDataFound type="notifications" />
+              )}
             </div>
             <div style={{ flex: 2, minWidth: 400 }}>
               {selectedNotification ? (

@@ -26,6 +26,8 @@ import type {
 import { categoryService } from '../utils/categoryService';
 import type { Category } from '../utils/categoryService';
 import { notificationService } from '../utils/notificationService';
+import SkeletonLoader from '../components/SkeletonLoader';
+import NoDataFound from '../components/NoDataFound';
 
 // Payment method options
 const paymentMethods = [
@@ -430,10 +432,8 @@ const Expenses: React.FC = () => {
       {/* Expenses Table */}
       <Card>
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <ProgressSpinner />
-          </div>
-        ) : (
+          <SkeletonLoader type="table" count={8} />
+        ) : expenses.length > 0 ? (
           <>
             <DataTable 
               value={expenses} 
@@ -461,6 +461,15 @@ const Expenses: React.FC = () => {
               rowsPerPageOptions={[5, 10, 20, 50]}
             />
           </>
+        ) : (
+          <NoDataFound 
+            type="expenses" 
+            onAction={openCreateDialog}
+            message={filters.search || filters.category || filters.paymentMethod 
+              ? "No expenses match your current filters. Try adjusting your search criteria." 
+              : "You haven't added any expenses yet. Start tracking your spending by adding your first expense."
+            }
+          />
         )}
       </Card>
 

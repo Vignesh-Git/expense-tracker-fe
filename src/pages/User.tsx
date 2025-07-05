@@ -3,6 +3,7 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { useAuth } from '../utils/useAuth';
 import { useNavigate } from 'react-router-dom';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const UserPage: React.FC = () => {
   const { user, logout, isLoading } = useAuth();
@@ -12,6 +13,16 @@ const UserPage: React.FC = () => {
     await logout();
     navigate('/login');
   };
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+        <Card style={{ width: 400, padding: '2.5rem 2rem', textAlign: 'center' }}>
+          <SkeletonLoader type="form" />
+        </Card>
+      </div>
+    );
+  }
 
   if (!user) return null;
 

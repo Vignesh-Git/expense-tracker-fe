@@ -20,14 +20,7 @@ const AdminOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Route guard for user-only routes
-const UserOnlyRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
-  if (user && user.role === 'admin') {
-    return <Navigate to="/" replace />;
-  }
-  return <>{children}</>;
-};
+
 
 const App: React.FC = () => {
   return (

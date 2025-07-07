@@ -1,4 +1,18 @@
-# ExpenSync Frontend
+# ExpenseSync Frontend
+
+---
+
+**Frontend Live App:** [https://main.do3xsaggo4ysf.amplifyapp.com/](https://main.do3xsaggo4ysf.amplifyapp.com/)
+
+**Swagger API Docs:** [https://ckhpkdpdca.ap-south-1.awsapprunner.com/api-docs/](https://ckhpkdpdca.ap-south-1.awsapprunner.com/api-docs/)
+
+---
+
+## How to Use
+
+- Visit the live app: [https://main.do3xsaggo4ysf.amplifyapp.com/](https://main.do3xsaggo4ysf.amplifyapp.com/)
+- Login as admin or user (see backend README for credentials)
+- To explore the backend API, visit the Swagger docs: [https://ckhpkdpdca.ap-south-1.awsapprunner.com/api-docs/](https://ckhpkdpdca.ap-south-1.awsapprunner.com/api-docs/)
 
 A modern expense tracking application built with React, TypeScript, PrimeReact, and RxJS for reactive state management.
 

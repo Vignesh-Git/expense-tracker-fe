@@ -26,6 +26,7 @@ const Dashboard: React.FC = () => {
   const [pendingApprovals, setPendingApprovals] = useState<any[]>([]);
 
   useEffect(() => {
+    if (isAdmin === undefined) return;
     if (isAdmin) {
       loadAdminDashboard();
     } else {

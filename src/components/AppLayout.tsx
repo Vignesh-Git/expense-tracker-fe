@@ -20,9 +20,11 @@ const Navigation = () => {
       icon: 'pi pi-home',
       url: '/',
     },
+    // Show Expenses for all users, and Approvals for admin
+    { label: 'Expenses', icon: 'pi pi-dollar', url: '/expenses' },
     ...(user && user.role === 'admin'
       ? [{ label: 'Approvals', icon: 'pi pi-check-square', url: '/admin/approvals' }]
-      : [{ label: 'Expenses', icon: 'pi pi-dollar', url: '/expenses' }]),
+      : []),
     {
       label: 'Settings',
       icon: 'pi pi-cog',

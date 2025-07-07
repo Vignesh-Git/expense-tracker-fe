@@ -179,7 +179,7 @@ const Dashboard: React.FC = () => {
               <NoDataFound type="categories" />
             )}
           </Card>
-          <Card title="Spending Trend (All Users)" className="flex-3">
+          <Card title="Spending Trend (All Users)" className="flex-3 w-full">
             {adminAnalytics?.monthlyTrend?.length > 0 ? (
               <Chart type="line" data={getAdminTrendChartData(adminAnalytics)} options={{ plugins: { legend: { display: false } } }} />
             ) : (

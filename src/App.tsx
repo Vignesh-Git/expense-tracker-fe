@@ -44,11 +44,7 @@ const App: React.FC = () => {
               <AppLayout>
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
-                  <Route path="/expenses" element={
-                    <UserOnlyRoute>
-                      <Expenses />
-                    </UserOnlyRoute>
-                  } />
+                  <Route path="/expenses" element={<Expenses />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/user" element={<UserPage />} />
                   <Route path="/admin/approvals" element={

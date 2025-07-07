@@ -19,6 +19,7 @@ import { notificationService } from '../utils/notificationService';
 import SkeletonLoader from '../components/SkeletonLoader';
 import NoDataFound from '../components/NoDataFound';
 import PageHeader from '../components/PageHeader';
+import { useAuth } from '../utils/useAuth';
 
 // Payment method options
 const paymentMethods = [
@@ -64,11 +65,32 @@ const Expenses: React.FC = () => {
     isRecurring: false
   });
 
+  // Add validation state
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  // Validation function
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+    if (!formData.category) errors.category = 'Category is required.';
+    if (!formData.amount || formData.amount <= 0) errors.amount = 'Amount must be greater than 0.';
+    if (!formData.description || formData.description.trim() === '') errors.description = 'Description is required.';
+    if (!formData.date) errors.date = 'Date is required.';
+    if (!formData.paymentMethod) errors.paymentMethod = 'Payment method is required.';
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  // Add status filter for admin
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
   // Load initial data
   useEffect(() => {
     loadCategories();
     loadExpenses();
-  }, []);
+    // eslint-disable-next-line
+  }, [isAdmin ? statusFilter : null]);
 
   /**
    * Load expenses from API
@@ -76,7 +98,14 @@ const Expenses: React.FC = () => {
   const loadExpenses = async () => {
     try {
       setLoading(true);
-      const response = await expenseService.getExpenses(filters);
+      let response;
+      if (isAdmin) {
+        const adminFilters: any = { ...filters };
+        if (statusFilter !== 'all') adminFilters['approvalStatus'] = statusFilter;
+        response = await expenseService.getAllExpensesAdmin(adminFilters);
+      } else {
+        response = await expenseService.getExpenses(filters);
+      }
       setExpenses(response.expenses);
       setPagination(response.pagination);
     } catch (error) {
@@ -116,14 +145,24 @@ const Expenses: React.FC = () => {
       limit: event.rows
     };
     setFilters(newFilters);
-    // Update the filters and reload
     setTimeout(() => {
-      expenseService.getExpenses(newFilters).then(response => {
-        setExpenses(response.expenses);
-        setPagination(response.pagination);
-      }).catch(error => {
-        console.error('Load expenses error:', error);
-      });
+      if (isAdmin) {
+        const adminFilters: any = { ...newFilters };
+        if (statusFilter !== 'all') adminFilters['approvalStatus'] = statusFilter;
+        expenseService.getAllExpensesAdmin(adminFilters).then(response => {
+          setExpenses(response.expenses);
+          setPagination(response.pagination);
+        }).catch(error => {
+          console.error('Load expenses error:', error);
+        });
+      } else {
+        expenseService.getExpenses(newFilters).then(response => {
+          setExpenses(response.expenses);
+          setPagination(response.pagination);
+        }).catch(error => {
+          console.error('Load expenses error:', error);
+        });
+      }
     }, 100);
   };
 
@@ -137,15 +176,24 @@ const Expenses: React.FC = () => {
       page: 1 // Reset to first page when filtering
     };
     setFilters(newFilters);
-    
-    // Update the filters and reload
     setTimeout(() => {
-      expenseService.getExpenses(newFilters).then(response => {
-        setExpenses(response.expenses);
-        setPagination(response.pagination);
-      }).catch(error => {
-        console.error('Load expenses error:', error);
-      });
+      if (isAdmin) {
+        const adminFilters: any = { ...newFilters };
+        if (statusFilter !== 'all') adminFilters['approvalStatus'] = statusFilter;
+        expenseService.getAllExpensesAdmin(adminFilters).then(response => {
+          setExpenses(response.expenses);
+          setPagination(response.pagination);
+        }).catch(error => {
+          console.error('Load expenses error:', error);
+        });
+      } else {
+        expenseService.getExpenses(newFilters).then(response => {
+          setExpenses(response.expenses);
+          setPagination(response.pagination);
+        }).catch(error => {
+          console.error('Load expenses error:', error);
+        });
+      }
     }, 300);
   };
 
@@ -160,15 +208,24 @@ const Expenses: React.FC = () => {
       sortOrder: 'desc'
     };
     setFilters(newFilters);
-    
-    // Update the filters and reload
     setTimeout(() => {
-      expenseService.getExpenses(newFilters).then(response => {
-        setExpenses(response.expenses);
-        setPagination(response.pagination);
-      }).catch(error => {
-        console.error('Load expenses error:', error);
-      });
+      if (isAdmin) {
+        const adminFilters: any = { ...newFilters };
+        if (statusFilter !== 'all') adminFilters['approvalStatus'] = statusFilter;
+        expenseService.getAllExpensesAdmin(adminFilters).then(response => {
+          setExpenses(response.expenses);
+          setPagination(response.pagination);
+        }).catch(error => {
+          console.error('Load expenses error:', error);
+        });
+      } else {
+        expenseService.getExpenses(newFilters).then(response => {
+          setExpenses(response.expenses);
+          setPagination(response.pagination);
+        }).catch(error => {
+          console.error('Load expenses error:', error);
+        });
+      }
     }, 100);
   };
 
@@ -208,6 +265,7 @@ const Expenses: React.FC = () => {
    * Handle form submission (create or update expense)
    */
   const handleSubmit = async () => {
+    if (!validateForm()) return;
     try {
       setSubmitting(true);
       
@@ -280,8 +338,8 @@ const Expenses: React.FC = () => {
   return (
     <div className="app-page-root">
       <PageHeader title="Expenses" subtitle="Manage and track your expenses">
-        {/* Only show Add Expense button if there is data or loading */}
-        {(loading || expenses.length > 0) && (
+        {/* Only show Add Expense button if there is data or loading and not admin */}
+        {(!isAdmin && (loading || expenses.length > 0)) && (
           <Button label="Add Expense" icon="pi pi-plus" onClick={openCreateDialog} className="p-button-primary" />
         )}
       </PageHeader>
@@ -321,6 +379,22 @@ const Expenses: React.FC = () => {
                 className="w-full"
               />
             </div>
+            {isAdmin && (
+              <div className="flex-1">
+                <Dropdown
+                  value={statusFilter}
+                  options={[
+                    { label: 'All Statuses', value: 'all' },
+                    { label: 'Requested', value: 'requested' },
+                    { label: 'Approved', value: 'approved' },
+                    { label: 'Denied', value: 'denied' }
+                  ]}
+                  onChange={e => setStatusFilter(e.value)}
+                  placeholder="Filter by status"
+                  className="w-full"
+                />
+              </div>
+            )}
             <div className="flex-none">
               <Button
                 label="Reset"
@@ -346,6 +420,9 @@ const Expenses: React.FC = () => {
                 stripedRows
                 showGridlines
               >
+                {isAdmin && <Column field="user.name" header="User" body={expense => (
+                  <span>{expense.user?.name || ''}<br /><small>{expense.user?.email || ''}</small></span>
+                )} />}
                 <Column field="date" header="Date" body={expense => new Date(expense.date).toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' })} sortable />
                 <Column field="description" header="Description" sortable />
                 <Column field="category" header="Category" body={expense => (
@@ -362,7 +439,7 @@ const Expenses: React.FC = () => {
                   else if (expense.approval.status === "denied") { severity = "danger"; label = "Denied"; }
                   return <Tag value={label} severity={severity} />;
                 }} style={{ minWidth: 140 }} />
-                <Column header="Actions" body={actionTemplate} style={{ width: '120px' }} />
+                {!isAdmin && <Column header="Actions" body={actionTemplate} style={{ width: '120px' }} />}
               </DataTable>
               <Paginator
                 first={(pagination.currentPage - 1) * pagination.itemsPerPage}
@@ -426,6 +503,7 @@ const Expenses: React.FC = () => {
                 showClear
                 className="w-full"
               />
+              {formErrors.category && <small className="p-error block mt-1">{formErrors.category}</small>}
             </div>
             <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
               <label className="block mb-2">Amount</label>
@@ -436,6 +514,7 @@ const Expenses: React.FC = () => {
                 currency="USD"
                 className="w-full"
               />
+              {formErrors.amount && <small className="p-error block mt-1">{formErrors.amount}</small>}
             </div>
             <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
               <label className="block mb-2">Description</label>
@@ -445,6 +524,7 @@ const Expenses: React.FC = () => {
                 placeholder="Enter expense description"
                 className="w-full"
               />
+              {formErrors.description && <small className="p-error block mt-1">{formErrors.description}</small>}
             </div>
             <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
               <label className="block mb-2">Date</label>
@@ -457,6 +537,7 @@ const Expenses: React.FC = () => {
                 dateFormat="yy-mm-dd"
                 className="w-full"
               />
+              {formErrors.date && <small className="p-error block mt-1">{formErrors.date}</small>}
             </div>
             <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
               <label className="block mb-2">Payment Method</label>
@@ -468,6 +549,7 @@ const Expenses: React.FC = () => {
                 showClear
                 className="w-full"
               />
+              {formErrors.paymentMethod && <small className="p-error block mt-1">{formErrors.paymentMethod}</small>}
             </div>
           </div>
         </Dialog>

@@ -319,6 +319,30 @@ class ExpenseService {
       throw error;
     }
   }
+
+  /**
+   * Get all expenses for admin with filters
+   */
+  async getAllExpensesAdmin(filters: any = {}): Promise<PaginatedResponse<Expense>> {
+    try {
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+      const url = `${API_BASE_URL}/admin/all-expenses${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const response = await this.makeAuthRequest(url);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch all expenses');
+      }
+      return data;
+    } catch (error) {
+      console.error('Get all expenses (admin) error:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

@@ -8,6 +8,23 @@
 
 ---
 
+## 🚩 Mandatory Features
+
+- **User Authentication & Roles**: Login, registration, and role-based access (user/admin)
+- **Expense Management**: Add, edit, delete, and list expenses with categories and payment methods (user only)
+- **Category Management**: Custom categories for expenses
+- **Budget Tracking**: Set and monitor budgets per category
+- **Admin Panel**:
+  - View and filter all users' expenses (with status filter)
+  - Approve/deny expense requests
+  - View all users and manage them
+- **Notifications**: Real-time notifications for approvals/denials
+- **API Documentation**: Swagger UI ([see backend link above](https://ckhpkdpdca.ap-south-1.awsapprunner.com/api-docs/))
+
+> **Note:** File upload/receipt attachment is **not implemented**.
+
+---
+
 ## How to Use
 
 - Visit the live app: [https://main.do3xsaggo4ysf.amplifyapp.com/](https://main.do3xsaggo4ysf.amplifyapp.com/)

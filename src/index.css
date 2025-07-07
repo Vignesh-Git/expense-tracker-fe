@@ -139,14 +139,14 @@
 /* Table row hover effects */
 .p-datatable .p-datatable-tbody > tr:hover {
   background-color: #f8fafc;
-  transform: scale(1.01);
+  /* transform: scale(1.01); */
 }
 
 /* Form input focus effects */
 .p-inputtext:focus,
 .p-dropdown:focus,
 .p-calendar:focus {
-  transform: scale(1.02);
+  /* transform: scale(1.02); */
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 

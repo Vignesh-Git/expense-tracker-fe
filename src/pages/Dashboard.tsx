@@ -4,7 +4,6 @@ import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Chart } from 'primereact/chart';
 import { Tag } from 'primereact/tag';
-import { Button } from 'primereact/button';
 import { useAuth } from '../utils/useAuth';
 import { expenseService } from '../utils/expenseService';
 import { categoryService } from '../utils/categoryService';
@@ -15,7 +14,7 @@ import PageHeader from '../components/PageHeader';
 const API_BASE_URL = 'http://localhost:5000';
 
 const Dashboard: React.FC = () => {
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const [loading, setLoading] = useState(false);
   // User dashboard state
   const [userAnalytics, setUserAnalytics] = useState<any>(null);
@@ -40,9 +39,14 @@ const Dashboard: React.FC = () => {
     setLoading(true);
     try {
       const analytics = await expenseService.getExpenseAnalytics();
-      setUserAnalytics(analytics);
       const recent = await expenseService.getExpenses({ limit: 5, sortBy: 'date', sortOrder: 'desc' });
-      setRecentExpenses(recent.expenses);
+      // Only include approved expenses
+      const approvedExpenses = recent.expenses.filter((e: any) => e.approval?.status === 'approved');
+      setUserAnalytics({
+        ...analytics,
+        // Optionally filter analytics.byCategory, monthlyTrend, etc. if needed
+      });
+      setRecentExpenses(approvedExpenses);
       const cats = await categoryService.getCategories();
       setCategories(cats);
     } finally {
@@ -106,7 +110,7 @@ const Dashboard: React.FC = () => {
               <NoDataFound type="categories" />
             )}
           </Card>
-          <Card title="Spending Trend" className="flex-3">
+          <Card title="Spending Trend" className="flex-3 w-full">
             {userAnalytics?.monthlyTrend?.length > 0 ? (
               <Chart type="line" data={getTrendChartData(userAnalytics)} options={{ plugins: { legend: { display: false } } }} />
             ) : (
@@ -117,10 +121,15 @@ const Dashboard: React.FC = () => {
         <Card title="Recent Expenses">
           {recentExpenses.length > 0 ? (
             <DataTable value={recentExpenses} responsiveLayout="scroll">
-              <Column field="date" header="Date" body={row => new Date(row.date).toLocaleDateString()} />
+              <Column field="date" header="Date" body={row => new Date(row.date).toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' })} />
               <Column field="description" header="Description" />
-              <Column field="amount" header="Amount" body={row => `$${row.amount.toFixed(2)}`} />
-              <Column field="category.name" header="Category" />
+              <Column field="amount" header="Amount" body={row => row.amount ? row.amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : ''} />
+              <Column field="category.name" header="Category" body={row => (
+                <span className="flex align-items-center gap-2">
+                  {row.category?.icon && <i className={row.category.icon} style={{ color: row.category.color }} />}
+                  <Tag value={row.category?.name} style={{ backgroundColor: row.category?.color, color: '#fff', border: 'none' }} />
+                </span>
+              )} />
               <Column field="approval.status" header="Status" body={row => <Tag value={row.approval?.status || 'N/A'} severity={getStatusSeverity(row.approval?.status)} />} />
             </DataTable>
           ) : (

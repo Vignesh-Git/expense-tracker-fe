@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Button } from 'primereact/button';
 import { useAuth } from '../utils/useAuth';
 import ExpenseSyncLogo from '../assets/ExpenseSync.logo.png'; // Import logo
 
@@ -13,7 +12,7 @@ interface AppLayoutProps {
 const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, isLoading } = useAuth();
+  const { user } = useAuth();
 
   const menuItems = [
     {
@@ -21,27 +20,15 @@ const Navigation = () => {
       icon: 'pi pi-home',
       url: '/',
     },
-    {
-      label: 'Expenses',
-      icon: 'pi pi-dollar',
-      url: '/expenses',
-    },
+    ...(user && user.role === 'admin'
+      ? [{ label: 'Approvals', icon: 'pi pi-check-square', url: '/admin/approvals' }]
+      : [{ label: 'Expenses', icon: 'pi pi-dollar', url: '/expenses' }]),
     {
       label: 'Settings',
       icon: 'pi pi-cog',
       url: '/settings',
     }
   ];
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-      navigate('/login');
-    }
-  };
 
   return (
     <nav

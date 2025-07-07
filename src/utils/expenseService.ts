@@ -282,6 +282,43 @@ class ExpenseService {
       throw error;
     }
   }
+
+  /**
+   * Get all pending approvals (admin)
+   */
+  async getPendingApprovals(): Promise<Expense[]> {
+    try {
+      const response = await this.makeAuthRequest(`${API_BASE_URL}/admin/pending-approvals`);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch pending approvals');
+      }
+      return data;
+    } catch (error) {
+      console.error('Get pending approvals error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update approval status of an expense (admin)
+   */
+  async updateApprovalStatus(id: string, status: 'approved' | 'denied', description = ''): Promise<{ message: string; expense: Expense }> {
+    try {
+      const response = await this.makeAuthRequest(`${API_BASE_URL}/expenses/${id}` , {
+        method: 'PUT',
+        body: JSON.stringify({ approval: { status, description } })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update approval status');
+      }
+      return data;
+    } catch (error) {
+      console.error('Update approval status error:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

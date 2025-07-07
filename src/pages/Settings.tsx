@@ -52,7 +52,6 @@ const Settings: React.FC = () => {
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
   const [replyMessage, setReplyMessage] = useState('');
   const [statusRemark, setStatusRemark] = useState('');
-  const [statusAction, setStatusAction] = useState<'approved' | 'denied' | null>(null);
   const [showRequestDialog, setShowRequestDialog] = useState(false);
   const [requestFormData, setRequestFormData] = useState({ name: '', color: '#2196f3', icon: 'pi pi-tag' });
 
@@ -104,7 +103,6 @@ const Settings: React.FC = () => {
     setSelectedNotification(n);
     setReplyMessage('');
     setStatusRemark('');
-    setStatusAction(null);
   };
 
   const handleReply = async () => {
@@ -124,7 +122,6 @@ const Settings: React.FC = () => {
     try {
       await notificationService.updateStatus(selectedNotification._id, action, statusRemark.trim());
       setStatusRemark('');
-      setStatusAction(null);
       loadNotifications();
       showToast('success', 'Status Updated', `Request ${action}`);
     } catch (e) {
@@ -325,7 +322,7 @@ const Settings: React.FC = () => {
                       <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
                     ) : null
                   )}
-                  valueTemplate={(option, props) =>
+                  valueTemplate={(option) =>
                     option && option.value ? (
                       <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
                     ) : (
@@ -378,7 +375,7 @@ const Settings: React.FC = () => {
                       <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
                     ) : null
                   )}
-                  valueTemplate={(option, props) =>
+                  valueTemplate={(option) =>
                     option && option.value ? (
                       <span><i className={option.value} style={{ marginRight: 8 }} />{option.label}</span>
                     ) : (

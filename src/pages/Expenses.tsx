@@ -8,7 +8,6 @@ import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { InputNumber } from 'primereact/inputnumber';
-import { Toast } from 'primereact/toast';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Tag } from 'primereact/tag';
 import { Paginator } from 'primereact/paginator';
@@ -38,7 +37,6 @@ const Expenses: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [toast, setToast] = useState<Toast | null>(null);
   
   // Pagination state
   const [pagination, setPagination] = useState({
@@ -82,7 +80,6 @@ const Expenses: React.FC = () => {
       setExpenses(response.expenses);
       setPagination(response.pagination);
     } catch (error) {
-      showToast('error', 'Error', 'Failed to load expenses');
       console.error('Load expenses error:', error);
     } finally {
       setLoading(false);
@@ -125,7 +122,6 @@ const Expenses: React.FC = () => {
         setExpenses(response.expenses);
         setPagination(response.pagination);
       }).catch(error => {
-        showToast('error', 'Error', 'Failed to load expenses');
         console.error('Load expenses error:', error);
       });
     }, 100);
@@ -148,7 +144,6 @@ const Expenses: React.FC = () => {
         setExpenses(response.expenses);
         setPagination(response.pagination);
       }).catch(error => {
-        showToast('error', 'Error', 'Failed to load expenses');
         console.error('Load expenses error:', error);
       });
     }, 300);
@@ -172,7 +167,6 @@ const Expenses: React.FC = () => {
         setExpenses(response.expenses);
         setPagination(response.pagination);
       }).catch(error => {
-        showToast('error', 'Error', 'Failed to load expenses');
         console.error('Load expenses error:', error);
       });
     }, 100);
@@ -219,10 +213,8 @@ const Expenses: React.FC = () => {
       
       if (editingExpense) {
         await expenseService.updateExpense(editingExpense._id, formData);
-        showToast('success', 'Success', 'Expense updated successfully');
       } else {
         const newExpense = await expenseService.createExpense(formData);
-        showToast('success', 'Success', 'Expense created successfully');
         
         // Create notification for admin about new expense
         try {
@@ -240,7 +232,6 @@ const Expenses: React.FC = () => {
       setShowDialog(false);
       loadExpenses();
     } catch (error) {
-      showToast('error', 'Error', editingExpense ? 'Failed to update expense' : 'Failed to create expense');
       console.error('Submit error:', error);
     } finally {
       setSubmitting(false);
@@ -258,64 +249,12 @@ const Expenses: React.FC = () => {
       accept: async () => {
         try {
           await expenseService.deleteExpense(expense._id);
-          showToast('success', 'Success', 'Expense deleted successfully');
           loadExpenses();
         } catch (error) {
-          showToast('error', 'Error', 'Failed to delete expense');
           console.error('Delete error:', error);
         }
       }
     });
-  };
-
-  /**
-   * Show toast notification
-   */
-  const showToast = (severity: 'success' | 'error' | 'warn' | 'info', summary: string, detail: string) => {
-    toast?.show({ severity, summary, detail, life: 3000 });
-  };
-
-  /**
-   * Format amount for display
-   */
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
-
-  /**
-   * Format date for display
-   */
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-
-  /**
-   * Render payment method tag
-   */
-  const paymentMethodTemplate = (expense: Expense) => {
-    const severity = expense.paymentMethod === 'cash' ? 'info' : 
-                    expense.paymentMethod === 'card' ? 'success' : 'warning';
-    return <Tag value={expense.paymentMethod.toUpperCase()} severity={severity} />;
-  };
-
-  /**
-   * Render category tag
-   */
-  const categoryTemplate = (expense: Expense) => {
-    return (
-      <Tag 
-        value={expense.category.name} 
-        style={{ backgroundColor: expense.category.color, color: 'white' }}
-      />
-    );
   };
 
   /**
@@ -338,24 +277,13 @@ const Expenses: React.FC = () => {
     );
   };
 
-  // Helper to render approval status
-  const approvalStatusTemplate = (expense: Expense) => {
-    let severity: 'success' | 'info' | 'danger' = 'info';
-    let label = 'Requested';
-    if (expense.approval.status === 'approved') {
-      severity = 'success';
-      label = 'Approved';
-    } else if (expense.approval.status === 'denied') {
-      severity = 'danger';
-      label = 'Denied';
-    }
-    return <Tag value={label} severity={severity} />;
-  };
-
   return (
     <div className="app-page-root">
       <PageHeader title="Expenses" subtitle="Manage and track your expenses">
-        <Button label="Add Expense" icon="pi pi-plus" onClick={openCreateDialog} className="p-button-primary" />
+        {/* Only show Add Expense button if there is data or loading */}
+        {(loading || expenses.length > 0) && (
+          <Button label="Add Expense" icon="pi pi-plus" onClick={openCreateDialog} className="p-button-primary" />
+        )}
       </PageHeader>
       <div className="flex flex-column gap-4 w-full">
         {/* <Toast ref={(el) => setToast(el)} /> */}
@@ -363,38 +291,43 @@ const Expenses: React.FC = () => {
         
         {/* Filters */}
         <Card>
-          <div className="grid align-items-end gap-3">
-            <div className="col-12 md:col-3">
+          {/* Updated: Filters and Reset in a single row */}
+          <div className="flex flex-column md:flex-row align-items-end gap-3 w-full">
+            <div className="flex-1">
               <InputText
                 placeholder="Search expenses..."
                 value={filters.search || ''}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
+                className="w-full"
               />
             </div>
-            <div className="col-12 md:col-3">
+            <div className="flex-1">
               <Dropdown
                 placeholder="Select category"
                 value={filters.category || ''}
                 options={categories.map(cat => ({ label: cat.name, value: cat._id }))}
                 onChange={(e) => handleFilterChange('category', e.value)}
                 showClear
+                className="w-full"
               />
             </div>
-            <div className="col-12 md:col-3">
+            <div className="flex-1">
               <Dropdown
                 placeholder="Select payment method"
                 value={filters.paymentMethod || ''}
                 options={paymentMethods}
                 onChange={(e) => handleFilterChange('paymentMethod', e.value)}
                 showClear
+                className="w-full"
               />
             </div>
-            <div className="col-12 md:col-3">
+            <div className="flex-none">
               <Button
                 label="Reset"
                 icon="pi pi-refresh"
                 onClick={resetFilters}
-                className="p-button-outlined w-full"
+                className="p-button-outlined"
+                style={{ minWidth: 120 }}
               />
             </div>
           </div>
@@ -413,12 +346,22 @@ const Expenses: React.FC = () => {
                 stripedRows
                 showGridlines
               >
-                <Column field="date" header="Date" body={(expense) => formatDate(expense.date)} sortable />
+                <Column field="date" header="Date" body={expense => new Date(expense.date).toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' })} sortable />
                 <Column field="description" header="Description" sortable />
-                <Column field="category" header="Category" body={categoryTemplate} />
-                <Column field="amount" header="Amount" body={(expense) => formatAmount(expense.amount)} sortable />
-                <Column field="paymentMethod" header="Payment Method" body={paymentMethodTemplate} />
-                <Column field="approval.status" header="Approval Status" body={approvalStatusTemplate} style={{ minWidth: 140 }} />
+                <Column field="category" header="Category" body={expense => (
+                  <span className="flex align-items-center gap-2">
+                    {expense.category?.icon && <i className={expense.category.icon} style={{ color: expense.category.color }} />}
+                    <Tag value={expense.category?.name} style={{ backgroundColor: expense.category?.color, color: '#fff', border: 'none' }} />
+                  </span>
+                )} />
+                <Column field="amount" header="Amount" body={expense => expense.amount ? expense.amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : ''} sortable />
+                <Column field="paymentMethod" header="Payment Method" body={expense => expense.paymentMethod ? expense.paymentMethod.charAt(0).toUpperCase() + expense.paymentMethod.slice(1).replace('_', ' ') : ''} />
+                <Column field="approval.status" header="Approval Status" body={expense => {
+                  let severity: "success" | "info" | "danger" = "info", label = "Requested";
+                  if (expense.approval.status === "approved") { severity = "success"; label = "Approved"; }
+                  else if (expense.approval.status === "denied") { severity = "danger"; label = "Denied"; }
+                  return <Tag value={label} severity={severity} />;
+                }} style={{ minWidth: 140 }} />
                 <Column header="Actions" body={actionTemplate} style={{ width: '120px' }} />
               </DataTable>
               <Paginator
@@ -434,11 +377,15 @@ const Expenses: React.FC = () => {
           ) : (
             <NoDataFound
               type="expenses"
-              onAction={openCreateDialog}
-              message={filters.search || filters.category || filters.paymentMethod
-                ? "No expenses match your current filters. Try adjusting your search criteria."
-                : "You haven't added any expenses yet. Start tracking your spending by adding your first expense."
-              }
+              {...((filters.search || filters.category || filters.paymentMethod)
+                ? {
+                    message: "No data found matching your filter.",
+                    onAction: undefined
+                  }
+                : {
+                    message: "You haven't added any expenses yet. Start tracking your spending by adding your first expense.",
+                    onAction: openCreateDialog
+                  })}
             />
           )}
         </Card>
@@ -449,7 +396,7 @@ const Expenses: React.FC = () => {
           onHide={() => setShowDialog(false)}
           header={editingExpense ? 'Edit Expense' : 'Add New Expense'}
           modal
-          className="w-full max-w-2xl"
+          style={{ maxWidth: '500px', width: '100%' }}
           footer={
             <div className="flex justify-content-end gap-2">
               <Button
@@ -468,8 +415,9 @@ const Expenses: React.FC = () => {
             </div>
           }
         >
-          <div className="grid gap-3">
-            <div className="col-12 md:col-6">
+          <div className="flex flex-column gap-3">
+            <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
+              <label className="block mb-2">Category</label>
               <Dropdown
                 placeholder="Select category"
                 value={formData.category}
@@ -479,7 +427,8 @@ const Expenses: React.FC = () => {
                 className="w-full"
               />
             </div>
-            <div className="col-12 md:col-6">
+            <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
+              <label className="block mb-2">Amount</label>
               <InputNumber
                 value={formData.amount}
                 onValueChange={(e) => setFormData(prev => ({ ...prev, amount: e.value || 0 }))}
@@ -488,7 +437,8 @@ const Expenses: React.FC = () => {
                 className="w-full"
               />
             </div>
-            <div className="col-12">
+            <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
+              <label className="block mb-2">Description</label>
               <InputText
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -496,7 +446,8 @@ const Expenses: React.FC = () => {
                 className="w-full"
               />
             </div>
-            <div className="col-12 md:col-6">
+            <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
+              <label className="block mb-2">Date</label>
               <Calendar
                 value={formData.date ? new Date(formData.date) : null}
                 onChange={(e) => setFormData(prev => ({
@@ -507,7 +458,8 @@ const Expenses: React.FC = () => {
                 className="w-full"
               />
             </div>
-            <div className="col-12 md:col-6">
+            <div className="w-11 sm:w-10 md:w-8 lg:w-7 xl:w-6" style={{ width: '75%' }}>
+              <label className="block mb-2">Payment Method</label>
               <Dropdown
                 placeholder="Select payment method"
                 value={formData.paymentMethod}

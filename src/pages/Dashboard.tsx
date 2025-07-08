@@ -11,7 +11,7 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import NoDataFound from '../components/NoDataFound';
 import PageHeader from '../components/PageHeader';
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 const Dashboard: React.FC = () => {
   const { isAdmin } = useAuth();
